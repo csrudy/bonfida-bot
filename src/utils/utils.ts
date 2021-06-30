@@ -6,6 +6,7 @@ import { PublicKey } from "@solana/web3.js";
 import BN from "bn.js";
 import { WAD, ZERO } from "../constants";
 import { TokenInfo } from "@solana/spl-token-registry";
+import { MARKETS } from "@project-serum/serum";
 
 export type KnownTokenMap = Map<string, TokenInfo>;
 
@@ -242,3 +243,19 @@ export function convert(
 
   return result;
 }
+
+export const abbreviateAddress = (address: PublicKey | undefined, size = 4) => {
+  if (!address) {
+    return null;
+  }
+  const base58 = address.toBase58();
+  return base58.slice(0, size) + '…' + base58.slice(-size);
+}
+
+export const marketNameFromAddress = (address: PublicKey) => {
+  const market = MARKETS.find(m => m.address.toBase58() === address.toBase58())
+  if (!market) {
+    return abbreviateAddress(address);
+  }
+  return market.name;
+};

@@ -1,28 +1,20 @@
-import { Connection, PublicKey } from "@solana/web3.js";
-import React, { useEffect } from "react"
+import { Connection } from "@solana/web3.js";
+import React, { useEffect, useState } from "react"
 import { useConnection } from "../../contexts/connection";
 import { useUserAccounts } from "../../hooks";
 import { fetchPoolInfo, getPoolsSeedsBySigProvider, getPoolTokenMintFromSeed } from "@bonfida/bot";
-import { MARKETS } from "@project-serum/serum";
+import { Table } from "antd";
+import { marketNameFromAddress } from "../../utils/utils";
 
-function abbreviateAddress(address: PublicKey | undefined, size = 4) {
-  if (!address) {
-    return null;
-  }
-  const base58 = address.toBase58();
-  return base58.slice(0, size) + '…' + base58.slice(-size);
+enum AUTOMATED_STRATEGY_PLATFORMS {
+  BONFIDA = 'Bonfida'
 }
 
-const marketNameFromAddress = (address: PublicKey) => {
-  const market = MARKETS.find(m => m.address.toBase58() === address.toBase58())
-  if (!market) {
-    return abbreviateAddress(address);
-  }
-  return market.name;
-};
-
 interface UserPoolData {
-  markets: (string | null)[]
+  platform: AUTOMATED_STRATEGY_PLATFORMS
+  pool: {
+    markets: string[]
+  }
 }
 
 const getBonfidaPools = async (connection: Connection, userTokenMints: Set<string>): Promise<UserPoolData[]> => {
@@ -41,11 +33,16 @@ const getBonfidaPools = async (connection: Connection, userTokenMints: Set<strin
       connection,
       seed,
     )
-    const markets = poolInfo.authorizedMarkets.map(marketNameFromAddress)
-    console.log('[POOL INFO]', poolInfo)
-    console.log('[MARKETS]', markets)
+    const markets = 
+      poolInfo.authorizedMarkets
+        .map(marketNameFromAddress)
+        .filter((e): e is string => e !== null)
+
     const poolData = {
-      markets
+      platform: AUTOMATED_STRATEGY_PLATFORMS.BONFIDA,
+      pool: {
+        markets
+      },
     }
     userPoolsData.push(poolData)
   }
@@ -58,18 +55,38 @@ export const AutomatedStrategies = () => {
   const connection = useConnection();
   const { userAccounts } = useUserAccounts();
   const userTokenMints = new Set<string>(userAccounts.map(userTokenAccount => userTokenAccount.info.mint.toBase58()))
+  const [strategyData, setStrategyData] = useState<UserPoolData[]>([])
 
   useEffect(() => {
-    getBonfidaPools(connection, userTokenMints).then(console.log);
+    getBonfidaPools(connection, userTokenMints).then(data => setStrategyData(data));
   }, [connection, userTokenMints.size])
 
-
+  const columns = [
+    {
+      title: 'Platform',
+      dataIndex: 'platform',
+      key: 'platform',
+    },
+    {
+      title: 'Pool',
+      dataIndex: 'pool',
+      key: 'pool',
+      render: (pool: UserPoolData["pool"]) => (
+        <>
+        {pool.markets.map((element) => (<li>{element}</li>))}
+        </>
+      ),
+    },
+  ];
   
 
 
   return (
   <div>
     <h1>AUTOMATED STRATEGIES MODULE</h1>
+      <Table
+        columns={columns} dataSource={strategyData} pagination={false}>
+      </Table>
   </div>
   )
 }
