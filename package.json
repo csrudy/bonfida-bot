@@ -4,6 +4,7 @@
   "private": true,
   "dependencies": {
     "@ant-design/icons": "^4.5.0",
+    "@bonfida/bot": "^0.5.3",
     "@craco/craco": "^5.7.0",
     "@ledgerhq/hw-transport-webusb": "^5.41.0",
     "@project-serum/serum": "^0.13.34",
