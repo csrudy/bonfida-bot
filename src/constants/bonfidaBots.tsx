@@ -1,7 +1,7 @@
 export interface Pool {
   [poolSeed: string]: {
     name: string;
-    strategyType?: STRATEGY_TYPES
+    strategyType?: STRATEGY_TYPES;
   };
 }
 export interface ExternalSignalProvider {
@@ -23,11 +23,11 @@ export enum STRATEGY_TYPES {
 
 export const BONFIDA_OFFICIAL_POOLS_MAP: Pool = {
   // Super Trend
-  "CmGfYkZD7sXp3tCUNKdiUHV2cg2KscqAoY6EMKehNM4S": {
+  CmGfYkZD7sXp3tCUNKdiUHV2cg2KscqAoY6EMKehNM4S: {
     name: "BTC Super Trend",
     strategyType: STRATEGY_TYPES.SUPER_TREND,
   },
-  "Fm9m2muT5pSSsugiq8Ro7XVBnQoPopZpQVLDKgqY71LJ":{
+  Fm9m2muT5pSSsugiq8Ro7XVBnQoPopZpQVLDKgqY71LJ: {
     name: "ETH Super Trend",
     strategyType: STRATEGY_TYPES.SUPER_TREND,
   },
@@ -35,64 +35,64 @@ export const BONFIDA_OFFICIAL_POOLS_MAP: Pool = {
     name: "SRM Super Trend",
     strategyType: STRATEGY_TYPES.SUPER_TREND,
   },
-  "9Wrpzph39RPbkKtgap3xak4Dga7SgHedLwWEcTF2zSpV":{
+  "9Wrpzph39RPbkKtgap3xak4Dga7SgHedLwWEcTF2zSpV": {
     name: "FIDA Super Trend",
     strategyType: STRATEGY_TYPES.SUPER_TREND,
   },
   // Benson
-  "GjrAkn4wu1ijif7SYhnQc4uDMxMdW5X8AW3MLig5X33t":{
+  GjrAkn4wu1ijif7SYhnQc4uDMxMdW5X8AW3MLig5X33t: {
     name: "Sentiment Strategy Pro [Benson]",
     strategyType: STRATEGY_TYPES.SENTIMENT_BENSON,
   },
   // Volatility Expanson
-  "5tLDije3S75K8wgwnuk941cQuJGKu6EVAgEwN6jB6WVk":{
+  "5tLDije3S75K8wgwnuk941cQuJGKu6EVAgEwN6jB6WVk": {
     name: "Volatility Expansion BTC",
     strategyType: STRATEGY_TYPES.VOLATILITY_EXPANSION,
   },
   // RSI
-  "CShN6X5S8vKkbECJzZj6M1cKBiMGxKkZyJBmzkBRbUJA":{
+  CShN6X5S8vKkbECJzZj6M1cKBiMGxKkZyJBmzkBRbUJA: {
     name: "RSI BTC",
     strategyType: STRATEGY_TYPES.RSI,
   },
-  "HgBwzZPEQi1fmj9UKdDuHMry15seykh9KQiTnMR5ZkF7":{
+  HgBwzZPEQi1fmj9UKdDuHMry15seykh9KQiTnMR5ZkF7: {
     name: "RSI ETH",
     strategyType: STRATEGY_TYPES.RSI,
   },
-  "69aKAxbteNuPYeEamWSSsY3QQ58SxW275xftRJHW9wmX":{
+  "69aKAxbteNuPYeEamWSSsY3QQ58SxW275xftRJHW9wmX": {
     name: "RSI SRM",
     strategyType: STRATEGY_TYPES.RSI,
   },
-  "Bv3Acsiojxtj15f2tADwRA2VyLsQVm6CQqpaRsH8wHiN":{
+  Bv3Acsiojxtj15f2tADwRA2VyLsQVm6CQqpaRsH8wHiN: {
     name: "RSI FIDA",
     strategyType: STRATEGY_TYPES.RSI,
   },
   // MACD Strategies
-  "CwAcCoFZRxUppbwU1xp5qv8hUqNvDWasuRdAibKLXnj8":{
+  CwAcCoFZRxUppbwU1xp5qv8hUqNvDWasuRdAibKLXnj8: {
     name: "MACD BTC",
     strategyType: STRATEGY_TYPES.MACD,
   },
-  "7nmoqCBGzHcFgpiDCx25kJp4zLnUMdEnb1k3kAN36YuK":{
+  "7nmoqCBGzHcFgpiDCx25kJp4zLnUMdEnb1k3kAN36YuK": {
     name: "MACD ETH",
     strategyType: STRATEGY_TYPES.MACD,
   },
-  "2ekyVKS2Sq54mPUwx4eybA3gnrHKR9nBZP6DFRDcZn9j":{
+  "2ekyVKS2Sq54mPUwx4eybA3gnrHKR9nBZP6DFRDcZn9j": {
     name: "MACD SRM",
     strategyType: STRATEGY_TYPES.MACD,
   },
-  "3u6zrpaW9uRfpVqZYwCAiQLvQpiY1JmCCdvZV8ydro4r":{
+  "3u6zrpaW9uRfpVqZYwCAiQLvQpiY1JmCCdvZV8ydro4r": {
     name: "MACD FIDA",
     strategyType: STRATEGY_TYPES.MACD,
   },
   // CompendiumFi
-  "77WNkckkVG1vGePs35azez8C8PqcqwepExZG1kFzpm2m":{
+  "77WNkckkVG1vGePs35azez8C8PqcqwepExZG1kFzpm2m": {
     name: "CompendiuML Bitcoin 4H",
     strategyType: STRATEGY_TYPES.COMPENDIUML,
   },
-  "HLSW8oP7aCzUbkBYfYqXTmHNRx1KRGATKuoje1xG8pVb":{
+  HLSW8oP7aCzUbkBYfYqXTmHNRx1KRGATKuoje1xG8pVb: {
     name: "CompendiuML SOL 4H",
     strategyType: STRATEGY_TYPES.COMPENDIUML,
   },
-  "HZyfPT9Dun8mSPX9m7ezbedasc8owdtPqHQVDzHtdE1U":{
+  HZyfPT9Dun8mSPX9m7ezbedasc8owdtPqHQVDzHtdE1U: {
     name: "BartBot",
     strategyType: STRATEGY_TYPES.BART,
   },
