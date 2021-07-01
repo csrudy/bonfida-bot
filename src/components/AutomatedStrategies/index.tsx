@@ -66,18 +66,18 @@ const getBonfidaPools = async (
   );
   const bonfidaPoolSeeds = await getPoolsSeedsBySigProvider(connection);
   const userPoolSeeds: Buffer[] = [];
-  const poolMints: string[] = [];
+  const userPoolMints: string[] = [];
 
   for (const seed of bonfidaPoolSeeds) {
     // some pools are in bad states and cannot be fetched
     const mint = await getPoolTokenMintFromSeed(seed).catch(() => {});
     if (mint && userTokenMints.has(mint.toBase58())) {
       userPoolSeeds.push(seed);
-      poolMints.push(mint.toBase58());
+      userPoolMints.push(mint.toBase58());
     }
   }
 
-  const mints = await getMultipleAccounts(connection, poolMints, "single");
+  const mints = await getMultipleAccounts(connection, userPoolMints, "single");
   mints.keys.forEach((id, index) => {
     const mint = mints.array[index];
     if (mint) {
