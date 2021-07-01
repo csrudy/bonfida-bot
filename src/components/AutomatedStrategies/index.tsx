@@ -1,11 +1,18 @@
-import { Connection, ParsedAccountData, PublicKey } from "@solana/web3.js";
 import React, { useEffect, useState } from "react";
+import {
+  Connection,
+  ParsedAccountData,
+  PublicKey,
+  TokenAmount,
+} from "@solana/web3.js";
 import { useConnection } from "../../contexts/connection";
 import {
   fetchPoolBalances,
   fetchPoolInfo,
   getPoolsSeedsBySigProvider,
   getPoolTokenMintFromSeed,
+  PoolAsset,
+  PoolAssetBalance,
   PoolInfo,
 } from "@bonfida/bot";
 import { Table } from "antd";
@@ -25,6 +32,7 @@ import {
   MintParser,
 } from "../../contexts/accounts";
 import { useWallet } from "../../contexts/wallet";
+import { TokenPrice } from "./TokenPriceCell";
 
 enum AUTOMATED_STRATEGY_PLATFORMS {
   BONFIDA = "Bonfida",
@@ -34,6 +42,10 @@ interface UserPoolData {
   platform: AUTOMATED_STRATEGY_PLATFORMS;
   markets: string[];
   strategy: string;
+  tokenPrice: {
+    tokenAmount: TokenAmount;
+    poolAssetBalance: PoolAssetBalance[];
+  };
   balance: PoolInfo;
 }
 
@@ -91,11 +103,19 @@ const getBonfidaPools = async (
       .map(marketNameFromAddress)
       .filter((e): e is string => e !== null);
     const strategy = getStrategyFromPool(poolInfo);
+    const [tokenAmount, poolAssetBalance] = await fetchPoolBalances(
+      connection,
+      seed
+    );
     const poolData = {
       strategy,
       platform: AUTOMATED_STRATEGY_PLATFORMS.BONFIDA,
       markets,
       balance: poolInfo,
+      tokenPrice: {
+        tokenAmount,
+        poolAssetBalance,
+      },
     };
     userPoolsData.push(poolData);
   }
@@ -141,6 +161,22 @@ export const AutomatedStrategies = () => {
       title: "Strategy",
       dataIndex: "strategy",
       key: "strategy",
+    },
+    {
+      title: "Token Price",
+      dataIndex: "tokenPrice",
+      key: "tokenPrice",
+      render: ({
+        tokenAmount,
+        poolAssetBalance,
+      }: UserPoolData["tokenPrice"]) => (
+        <>
+          <TokenPrice
+            tokenAmount={tokenAmount}
+            poolAssetBalance={poolAssetBalance}
+          />
+        </>
+      ),
     },
     {
       title: "Balance",

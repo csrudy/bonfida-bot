@@ -1,7 +1,7 @@
 export interface Pool {
   [poolSeed: string]: {
     name: string;
-    strategyType?: STRATEGY_TYPES;
+    strategyType: STRATEGY_TYPES;
   };
 }
 export interface ExternalSignalProvider {
