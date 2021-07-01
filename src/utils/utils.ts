@@ -1,12 +1,13 @@
 import { useCallback, useState } from "react";
-import { MintInfo } from "@solana/spl-token";
+import { MintInfo, TOKEN_PROGRAM_ID } from "@solana/spl-token";
 
 import { TokenAccount } from "./../models";
-import { PublicKey } from "@solana/web3.js";
+import { Connection, GetProgramAccountsConfig, PublicKey } from "@solana/web3.js";
 import BN from "bn.js";
 import { WAD, ZERO } from "../constants";
 import { TokenInfo } from "@solana/spl-token-registry";
 import { MARKETS } from "@project-serum/serum";
+import { WalletAdapter } from "../contexts/wallet";
 
 export type KnownTokenMap = Map<string, TokenInfo>;
 
@@ -259,3 +260,25 @@ export const marketNameFromAddress = (address: PublicKey) => {
   }
   return market.name;
 };
+
+export const getUserParsedAccounts = async (connection: Connection, walletPublicKey: PublicKey) => {
+  const config: GetProgramAccountsConfig = {
+    encoding: "jsonParsed",
+    filters: [
+      {
+        dataSize: 165,
+      },
+      {
+        memcmp: {
+          offset: 32,
+          bytes: walletPublicKey?.toString(),
+        },
+      },
+    ],
+  };
+  const userParsedProgramAccounts = await connection.getParsedProgramAccounts(
+    TOKEN_PROGRAM_ID,
+    config
+  );
+  return userParsedProgramAccounts
+}
