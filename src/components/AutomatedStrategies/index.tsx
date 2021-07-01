@@ -2,6 +2,7 @@ import { Connection, ParsedAccountData, PublicKey } from "@solana/web3.js";
 import React, { useEffect, useState } from "react";
 import { useConnection } from "../../contexts/connection";
 import {
+  fetchPoolBalances,
   fetchPoolInfo,
   getPoolsSeedsBySigProvider,
   getPoolTokenMintFromSeed,
@@ -31,12 +32,12 @@ enum AUTOMATED_STRATEGY_PLATFORMS {
 
 interface UserPoolData {
   platform: AUTOMATED_STRATEGY_PLATFORMS;
-  pool: {
-    markets: string[];
-  };
+  markets: string[];
+  strategy: string;
+  balance: PoolInfo;
 }
 
-const getStrategyFromPool = (poolInfo: PoolInfo) => {
+const getStrategyFromPool = (poolInfo: PoolInfo): string => {
   const { seed, signalProvider } = poolInfo;
   const poolSeedString = new PublicKey(seed).toBase58();
   if (BONFIDA_OFFICIAL_POOLS_MAP.hasOwnProperty(poolSeedString)) {
@@ -45,9 +46,8 @@ const getStrategyFromPool = (poolInfo: PoolInfo) => {
     EXTERNAL_SIGNAL_PROVIDERS_MAP.hasOwnProperty(signalProvider.toBase58())
   ) {
     return EXTERNAL_SIGNAL_PROVIDERS_MAP[signalProvider.toBase58()].displayName;
-  } else {
-    return STRATEGY_TYPES.CUSTOM;
   }
+  return STRATEGY_TYPES.CUSTOM;
 };
 
 const getBonfidaPools = async (
@@ -94,9 +94,7 @@ const getBonfidaPools = async (
     const poolData = {
       strategy,
       platform: AUTOMATED_STRATEGY_PLATFORMS.BONFIDA,
-      pool: {
-        markets,
-      },
+      markets,
       balance: poolInfo,
     };
     userPoolsData.push(poolData);
@@ -128,12 +126,12 @@ export const AutomatedStrategies = () => {
       key: "platform",
     },
     {
-      title: "Pool",
-      dataIndex: "pool",
-      key: "pool",
-      render: (pool: UserPoolData["pool"]) => (
+      title: "Markets",
+      dataIndex: "markets",
+      key: "markets",
+      render: (markets: UserPoolData["markets"]) => (
         <>
-          {pool.markets.map((element) => (
+          {markets.map((element) => (
             <li>{element}</li>
           ))}
         </>
