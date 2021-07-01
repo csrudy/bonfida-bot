@@ -33,10 +33,13 @@ import {
 } from "../../contexts/accounts";
 import { useWallet } from "../../contexts/wallet";
 import { TokenPrice } from "./TokenPriceCell";
+import { InceptionPerformanceCell } from "./InceptionPerformanceCell";
 
 enum AUTOMATED_STRATEGY_PLATFORMS {
   BONFIDA = "Bonfida",
 }
+
+export declare type PoolSeed = string;
 
 interface UserPoolData {
   platform: AUTOMATED_STRATEGY_PLATFORMS;
@@ -47,6 +50,11 @@ interface UserPoolData {
     poolAssetBalance: PoolAssetBalance[];
   };
   balance: PoolInfo;
+  inceptionPerformance: {
+    poolSeed: PoolSeed;
+    tokenAmount: TokenAmount;
+    poolAssetBalance: PoolAssetBalance[];
+  };
 }
 
 const getStrategyFromPool = (poolInfo: PoolInfo): string => {
@@ -103,16 +111,22 @@ const getBonfidaPools = async (
       .map(marketNameFromAddress)
       .filter((e): e is string => e !== null);
     const strategy = getStrategyFromPool(poolInfo);
+    const poolSeed = new PublicKey(seed).toBase58();
     const [tokenAmount, poolAssetBalance] = await fetchPoolBalances(
       connection,
       seed
     );
     const poolData = {
+      markets,
       strategy,
       platform: AUTOMATED_STRATEGY_PLATFORMS.BONFIDA,
-      markets,
       balance: poolInfo,
       tokenPrice: {
+        tokenAmount,
+        poolAssetBalance,
+      },
+      inceptionPerformance: {
+        poolSeed,
         tokenAmount,
         poolAssetBalance,
       },
@@ -185,6 +199,16 @@ export const AutomatedStrategies = () => {
       render: (poolInfo: PoolInfo) => (
         <>
           <BalanceCell poolInfo={poolInfo} />
+        </>
+      ),
+    },
+    {
+      title: "Inception Performance",
+      dataIndex: "inceptionPerformance",
+      key: "inceptionPerfomance",
+      render: (inceptionPerfomance: UserPoolData["inceptionPerformance"]) => (
+        <>
+          <InceptionPerformanceCell {...inceptionPerfomance} />
         </>
       ),
     },
