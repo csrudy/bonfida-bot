@@ -1,7 +1,6 @@
-import { Connection, PublicKey } from "@solana/web3.js";
+import { Connection, ParsedAccountData, PublicKey } from "@solana/web3.js";
 import React, { useEffect, useState } from "react";
 import { useConnection } from "../../contexts/connection";
-import { useUserAccounts } from "../../hooks";
 import {
   fetchPoolInfo,
   getPoolsSeedsBySigProvider,
@@ -9,12 +8,22 @@ import {
   PoolInfo,
 } from "@bonfida/bot";
 import { Table } from "antd";
-import { marketNameFromAddress } from "../../utils/utils";
+import {
+  getUserParsedAccounts,
+  marketNameFromAddress,
+} from "../../utils/utils";
 import {
   BONFIDA_OFFICIAL_POOLS_MAP,
   EXTERNAL_SIGNAL_PROVIDERS_MAP,
   STRATEGY_TYPES,
 } from "../../constants/bonfidaBots";
+import { BalanceCell } from "./BalanceCell";
+import {
+  cache,
+  getMultipleAccounts,
+  MintParser,
+} from "../../contexts/accounts";
+import { useWallet } from "../../contexts/wallet";
 
 enum AUTOMATED_STRATEGY_PLATFORMS {
   BONFIDA = "Bonfida",
@@ -43,17 +52,38 @@ const getStrategyFromPool = (poolInfo: PoolInfo) => {
 
 const getBonfidaPools = async (
   connection: Connection,
-  userTokenMints: Set<string>
+  walletPublicKey: PublicKey
 ): Promise<UserPoolData[]> => {
+  const userTokenAccounts = await getUserParsedAccounts(
+    connection,
+    walletPublicKey
+  );
+  const userTokenMints = new Set<string>(
+    userTokenAccounts.map(
+      (userTokenAccount) =>
+        (userTokenAccount.account.data as ParsedAccountData).parsed.info.mint
+    )
+  );
   const bonfidaPoolSeeds = await getPoolsSeedsBySigProvider(connection);
   const userPoolSeeds: Buffer[] = [];
+  const poolMints: string[] = [];
+
   for (const seed of bonfidaPoolSeeds) {
     // some pools are in bad states and cannot be fetched
     const mint = await getPoolTokenMintFromSeed(seed).catch(() => {});
     if (mint && userTokenMints.has(mint.toBase58())) {
       userPoolSeeds.push(seed);
+      poolMints.push(mint.toBase58());
     }
   }
+
+  const mints = await getMultipleAccounts(connection, poolMints, "single");
+  mints.keys.forEach((id, index) => {
+    const mint = mints.array[index];
+    if (mint) {
+      cache.add(id, mint, MintParser);
+    }
+  });
   const userPoolsData = [];
   for (const seed of userPoolSeeds) {
     const poolInfo = await fetchPoolInfo(connection, seed);
@@ -67,6 +97,7 @@ const getBonfidaPools = async (
       pool: {
         markets,
       },
+      balance: poolInfo,
     };
     userPoolsData.push(poolData);
   }
@@ -75,20 +106,20 @@ const getBonfidaPools = async (
 };
 
 export const AutomatedStrategies = () => {
+  const wallet = useWallet();
+  const { publicKey } = wallet;
   const connection = useConnection();
-  const { userAccounts } = useUserAccounts();
-  const userTokenMints = new Set<string>(
-    userAccounts.map((userTokenAccount) =>
-      userTokenAccount.info.mint.toBase58()
-    )
-  );
   const [strategyData, setStrategyData] = useState<UserPoolData[]>([]);
-
+  const [loading, setLoading] = useState<boolean>(false);
   useEffect(() => {
-    getBonfidaPools(connection, userTokenMints).then((data) =>
-      setStrategyData(data)
-    );
-  }, [connection, userTokenMints.size]);
+    if (publicKey) {
+      setLoading(true);
+      getBonfidaPools(connection, publicKey).then((data) => {
+        setStrategyData(data);
+        setLoading(false);
+      });
+    }
+  }, [connection, publicKey]);
 
   const columns = [
     {
@@ -113,6 +144,16 @@ export const AutomatedStrategies = () => {
       dataIndex: "strategy",
       key: "strategy",
     },
+    {
+      title: "Balance",
+      dataIndex: "balance",
+      key: "balance",
+      render: (poolInfo: PoolInfo) => (
+        <>
+          <BalanceCell poolInfo={poolInfo} />
+        </>
+      ),
+    },
   ];
 
   return (
@@ -122,6 +163,7 @@ export const AutomatedStrategies = () => {
         columns={columns}
         dataSource={strategyData}
         pagination={false}
+        loading={loading}
       ></Table>
     </div>
   );
