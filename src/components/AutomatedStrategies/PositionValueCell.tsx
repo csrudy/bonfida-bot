@@ -48,7 +48,7 @@ export const PositionValueCell: FC<PositionValueCellProps> = ({
       {token}: {amount}
     </div>
   ));
-  debugger;
+
   return (
     <div className="cell-container">
       <strong>{formatUSD.format(totalValue)}</strong>

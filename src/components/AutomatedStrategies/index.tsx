@@ -34,6 +34,7 @@ import { useWallet } from "../../contexts/wallet";
 import { TokenPrice } from "./TokenPriceCell";
 import { InceptionPerformanceCell } from "./InceptionPerformanceCell";
 import { PositionValueCell } from "./PositionValueCell";
+import { MarketsCell } from "./MarketsCell";
 
 enum AUTOMATED_STRATEGY_PLATFORMS {
   BONFIDA = "Bonfida",
@@ -175,9 +176,7 @@ export const AutomatedStrategies = () => {
       key: "markets",
       render: (markets: UserPoolData["markets"]) => (
         <>
-          {markets.map((element) => (
-            <li>{element}</li>
-          ))}
+          <MarketsCell markets={markets} />
         </>
       ),
     },
