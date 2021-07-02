@@ -1,5 +1,6 @@
 import { PoolAssetBalance } from "@bonfida/bot";
 import { PublicKey, TokenAmount } from "@solana/web3.js";
+import { Tooltip } from "antd";
 import React, { FC } from "react";
 import { useConnectionConfig } from "../../contexts/connection";
 import { useUserBalance } from "../../hooks";
@@ -50,9 +51,32 @@ export const PositionValueCell: FC<PositionValueCellProps> = ({
   ));
 
   return (
-    <div className="cell-container">
-      <strong>{formatUSD.format(totalValue)}</strong>
-      <div>{labels}</div>
+    <div
+      className="cell-container"
+      style={{
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "flex-end",
+      }}
+    >
+      <div
+        style={{
+          fontFamily: "Plus Jakarta Sans",
+          fontStyle: "normal",
+          fontWeight: 800,
+          fontSize: "14px",
+          lineHeight: "0px",
+        }}
+      >
+        <strong>{formatUSD.format(totalValue)}</strong>
+      </div>
+      <div className="assets">
+        <Tooltip placement="bottomLeft" title={labels}>
+          <span style={{ fontSize: "10px" }}>
+            Accross {labels.length} Asset{labels.length > 1 ? "s" : ""}
+          </span>
+        </Tooltip>
+      </div>
     </div>
   );
 };

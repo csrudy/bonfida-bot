@@ -1278,6 +1278,11 @@
   dependencies:
     "@solana/web3.js" "^0.87.1"
 
+"@fontsource/plus-jakarta-sans@^4.4.5":
+  version "4.4.5"
+  resolved "https://registry.yarnpkg.com/@fontsource/plus-jakarta-sans/-/plus-jakarta-sans-4.4.5.tgz#e630f5829a6ed67971ab815605dd53af8e386b9c"
+  integrity sha512-l929lZl3htNhtwzdI2ifB83+0frQyXx4CmRrAjODdS+2UH3yJ11ezj5RnuMQQIdU3AKeTHOsJg5nATDPYGsCKg==
+
 "@hapi/address@2.x.x":
   version "2.1.4"
   resolved "https://registry.yarnpkg.com/@hapi/address/-/address-2.1.4.tgz#5d67ed43f3fd41a69d4b9ff7b56e7c0d1d0a81e5"
