@@ -1,4 +1,4 @@
-import { PoolAssetBalance, PoolInfo } from "@bonfida/bot";
+import { PoolAssetBalance } from "@bonfida/bot";
 import { TokenAmount } from "@solana/web3.js";
 import { Tag } from "antd";
 import React, { FC } from "react";

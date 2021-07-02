@@ -1,9 +1,6 @@
-import { PoolAssetBalance, PoolInfo } from "@bonfida/bot";
+import { PoolAssetBalance } from "@bonfida/bot";
 import { PublicKey, TokenAmount } from "@solana/web3.js";
-import { Tag } from "antd";
-import { debug } from "console";
 import React, { FC } from "react";
-import { BONFIDA_OFFICIAL_POOLS_MAP } from "../../constants/bonfidaBots";
 import { useConnectionConfig } from "../../contexts/connection";
 import { useUserBalance } from "../../hooks";
 import { usePoolTokenValue } from "../../hooks/usePoolTokenValue";

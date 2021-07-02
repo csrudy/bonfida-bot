@@ -7,7 +7,6 @@ import BN from "bn.js";
 import { WAD, ZERO } from "../constants";
 import { TokenInfo } from "@solana/spl-token-registry";
 import { MARKETS } from "@project-serum/serum";
-import { WalletAdapter } from "../contexts/wallet";
 
 export type KnownTokenMap = Map<string, TokenInfo>;
 
