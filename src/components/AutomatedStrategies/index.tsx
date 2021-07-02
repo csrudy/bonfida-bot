@@ -11,7 +11,6 @@ import {
   fetchPoolInfo,
   getPoolsSeedsBySigProvider,
   getPoolTokenMintFromSeed,
-  PoolAsset,
   PoolAssetBalance,
   PoolInfo,
 } from "@bonfida/bot";
@@ -34,6 +33,7 @@ import {
 import { useWallet } from "../../contexts/wallet";
 import { TokenPrice } from "./TokenPriceCell";
 import { InceptionPerformanceCell } from "./InceptionPerformanceCell";
+import { PositionValueCell } from "./PositionValueCell";
 
 enum AUTOMATED_STRATEGY_PLATFORMS {
   BONFIDA = "Bonfida",
@@ -52,6 +52,11 @@ interface UserPoolData {
   balance: PoolInfo;
   inceptionPerformance: {
     poolSeed: PoolSeed;
+    tokenAmount: TokenAmount;
+    poolAssetBalance: PoolAssetBalance[];
+  };
+  positionValue: {
+    mint: PublicKey;
     tokenAmount: TokenAmount;
     poolAssetBalance: PoolAssetBalance[];
   };
@@ -130,6 +135,11 @@ const getBonfidaPools = async (
         tokenAmount,
         poolAssetBalance,
       },
+      positionValue: {
+        mint: poolInfo.mintKey,
+        tokenAmount,
+        poolAssetBalance,
+      },
     };
     userPoolsData.push(poolData);
   }
@@ -205,10 +215,20 @@ export const AutomatedStrategies = () => {
     {
       title: "Inception Performance",
       dataIndex: "inceptionPerformance",
-      key: "inceptionPerfomance",
+      key: "inceptionPerformance",
       render: (inceptionPerfomance: UserPoolData["inceptionPerformance"]) => (
         <>
           <InceptionPerformanceCell {...inceptionPerfomance} />
+        </>
+      ),
+    },
+    {
+      title: "Value of Your Positiion (USD)",
+      dataIndex: "positionValue",
+      key: "positionValue",
+      render: (positionValue: UserPoolData["positionValue"]) => (
+        <>
+          <PositionValueCell {...positionValue} />
         </>
       ),
     },
