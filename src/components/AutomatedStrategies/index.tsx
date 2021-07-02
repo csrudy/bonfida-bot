@@ -5,6 +5,7 @@ import {
   PublicKey,
   TokenAmount,
 } from "@solana/web3.js";
+import { ReactComponent as BonfidaLogo } from "../../assets/fida.svg";
 import { useConnection } from "../../contexts/connection";
 import {
   fetchPoolBalances,
@@ -35,15 +36,27 @@ import { TokenPrice } from "./TokenPriceCell";
 import { InceptionPerformanceCell } from "./InceptionPerformanceCell";
 import { PositionValueCell } from "./PositionValueCell";
 import { MarketsCell } from "./MarketsCell";
+import { PlatformCell } from "./PlatformCell";
 
-enum AUTOMATED_STRATEGY_PLATFORMS {
-  BONFIDA = "Bonfida",
+enum AUTOMATED_STRATEGY_PLATFORMS_ENUM {
+  BONFIDA = "bonfida",
 }
 
+const PLATFORM_META = {
+  bonfida: {
+    label: "Bonfida",
+    tokenMint: "EchesyfXePKdLtoiZSL8pBe8Myagyy8ZRqsACNCFGnvp",
+  },
+};
+
 export declare type PoolSeed = string;
+interface PlatformMeta {
+  label: string;
+  tokenMint: string;
+}
 
 interface UserPoolData {
-  platform: AUTOMATED_STRATEGY_PLATFORMS;
+  platform: PlatformMeta;
   markets: string[];
   strategy: string;
   tokenPrice: {
@@ -125,7 +138,7 @@ const getBonfidaPools = async (
     const poolData = {
       markets,
       strategy,
-      platform: AUTOMATED_STRATEGY_PLATFORMS.BONFIDA,
+      platform: PLATFORM_META[AUTOMATED_STRATEGY_PLATFORMS_ENUM.BONFIDA],
       balance: poolInfo,
       tokenPrice: {
         tokenAmount,
@@ -169,6 +182,11 @@ export const AutomatedStrategies = () => {
       title: "Platform",
       dataIndex: "platform",
       key: "platform",
+      render: (platformProps: UserPoolData["platform"]) => (
+        <>
+          <PlatformCell {...platformProps} />
+        </>
+      ),
     },
     {
       title: "Markets",
