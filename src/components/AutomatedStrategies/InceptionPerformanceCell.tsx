@@ -1,8 +1,9 @@
 import { PoolAssetBalance } from "@bonfida/bot";
 import { TokenAmount } from "@solana/web3.js";
 import { Tag } from "antd";
-import React, { FC } from "react";
+import React, { FC, useEffect, useRef } from "react";
 import { PoolSeed } from ".";
+import { getTradingviewBotPerformance } from "../../actions/bonfida";
 import { BONFIDA_OFFICIAL_POOLS_MAP } from "../../constants/bonfidaBots";
 import { usePoolTokenValue } from "../../hooks/usePoolTokenValue";
 
@@ -13,9 +14,9 @@ interface InceptionPerformanceCellProps {
 }
 
 const getInceptionUsdValue = (poolSeed: string): number | null => {
-  const inceptionPerfomance =
+  const inceptionUsdValue =
     BONFIDA_OFFICIAL_POOLS_MAP[poolSeed]?.initialPoolTokenUsdValue || null;
-  return inceptionPerfomance;
+  return inceptionUsdValue;
 };
 
 export const InceptionPerformanceCell: FC<InceptionPerformanceCellProps> = ({
@@ -23,20 +24,33 @@ export const InceptionPerformanceCell: FC<InceptionPerformanceCellProps> = ({
   tokenAmount,
   poolAssetBalance,
 }) => {
-  let performance;
-  const initialPoolTokenUsdValue = getInceptionUsdValue(poolSeed);
+  const initialPoolTokenUsdValue = useRef<number | null>(null);
+  const value = getInceptionUsdValue(poolSeed);
+  initialPoolTokenUsdValue.current = value;
   const poolTokenValue = usePoolTokenValue(tokenAmount, poolAssetBalance);
-  if (initialPoolTokenUsdValue == null) {
-    // TODO Fetch from https://tradingview-cranker.bonfida.com/performance/<PoolSeed>
-    performance = null;
-  } else {
-    performance = 100 * (poolTokenValue / initialPoolTokenUsdValue - 1);
-  }
+  useEffect(() => {
+    (async () => {
+      if (initialPoolTokenUsdValue.current == null) {
+        // try to get performance data from tradingview
+        const { performance } = await getTradingviewBotPerformance(poolSeed);
+        if (performance.length) {
+          initialPoolTokenUsdValue.current = performance[0].poolTokenUsdValue;
+        }
+      }
+    })();
+    //eslint-disable-next-line
+  }, []);
 
+  const performanceValue =
+    initialPoolTokenUsdValue.current !== null
+      ? 100 * (poolTokenValue / initialPoolTokenUsdValue.current - 1)
+      : initialPoolTokenUsdValue.current;
   return (
     <>
       <Tag>
-        {performance !== null ? `${performance.toFixed(2)}%` : "Not Available"}
+        {performanceValue !== null
+          ? `${performanceValue.toFixed(2)}%`
+          : "Not Available"}
       </Tag>
     </>
   );

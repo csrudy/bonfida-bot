@@ -11,6 +11,9 @@ export interface ExternalSignalProvider {
     displayName: string;
   };
 }
+
+export const TRADING_VIEW_BOT_PERFORMANCE_ENDPOINT_BASE =
+  "https://tradingview-cranker.bonfida.com/performance/";
 export enum STRATEGY_TYPES {
   RSI = "RSI",
   MACD = "MACD",
