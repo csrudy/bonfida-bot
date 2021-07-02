@@ -54,17 +54,16 @@
     insert-css "^2.0.0"
     rc-util "^5.0.1"
 
-"@ant-design/icons@^4.5.0":
-  version "4.5.0"
-  resolved "https://registry.yarnpkg.com/@ant-design/icons/-/icons-4.5.0.tgz#dc5ceff85503932265143dc5c3013167daa3f754"
-  integrity sha512-ZAKJcmr4DBV3NWr8wm2dCxNKN4eFrX+qCaPsuFejP6FRsf+m5OKxvCVi9bSp1lmKWeOI5yECAx5s0uFm4QHuPw==
+"@ant-design/icons@^4.6.2":
+  version "4.6.2"
+  resolved "https://registry.yarnpkg.com/@ant-design/icons/-/icons-4.6.2.tgz#290f2e8cde505ab081fda63e511e82d3c48be982"
+  integrity sha512-QsBG2BxBYU/rxr2eb8b2cZ4rPKAPBpzAR+0v6rrZLp/lnyvflLH3tw1vregK+M7aJauGWjIGNdFmUfpAOtw25A==
   dependencies:
     "@ant-design/colors" "^6.0.0"
     "@ant-design/icons-svg" "^4.0.0"
     "@babel/runtime" "^7.11.2"
     classnames "^2.2.6"
-    insert-css "^2.0.0"
-    rc-util "^5.0.1"
+    rc-util "^5.9.4"
 
 "@ant-design/react-slick@~0.27.0":
   version "0.27.11"
@@ -10221,6 +10220,15 @@ rc-util@^5.0.0, rc-util@^5.0.1, rc-util@^5.0.5, rc-util@^5.0.6, rc-util@^5.0.7, 
   resolved "https://registry.yarnpkg.com/rc-util/-/rc-util-5.4.0.tgz#688eaeecfdae9dae2bfdf10bedbe884591dba004"
   integrity sha512-kXDn1JyLJTAWLBFt+fjkTcUtXhxKkipQCobQmxIEVrX62iXgo24z8YKoWehWfMxPZFPE+RXqrmEu9j5kHz/Lrg==
   dependencies:
+    react-is "^16.12.0"
+    shallowequal "^1.1.0"
+
+rc-util@^5.9.4:
+  version "5.13.1"
+  resolved "https://registry.yarnpkg.com/rc-util/-/rc-util-5.13.1.tgz#03e74955b5c46a58cbc6236e4d30dd462c755290"
+  integrity sha512-Dws2tjXBBihfjVQFlG5JzZ/5O3Wutctm0W94Wb1+M7GD2roWJPrQdSa4AkWm2pn0Ms32zoVPPkWodFeAYZPLfA==
+  dependencies:
+    "@babel/runtime" "^7.12.5"
     react-is "^16.12.0"
     shallowequal "^1.1.0"
 

@@ -5,7 +5,6 @@ import {
   PublicKey,
   TokenAmount,
 } from "@solana/web3.js";
-import { ReactComponent as BonfidaLogo } from "../../assets/fida.svg";
 import { useConnection } from "../../contexts/connection";
 import {
   fetchPoolBalances,
@@ -37,6 +36,7 @@ import { InceptionPerformanceCell } from "./InceptionPerformanceCell";
 import { PositionValueCell } from "./PositionValueCell";
 import { MarketsCell } from "./MarketsCell";
 import { PlatformCell } from "./PlatformCell";
+import { BotNameCell } from "./BotNameCell";
 
 enum AUTOMATED_STRATEGY_PLATFORMS_ENUM {
   BONFIDA = "bonfida",
@@ -58,7 +58,11 @@ interface PlatformMeta {
 interface UserPoolData {
   platform: PlatformMeta;
   markets: string[];
-  strategy: string;
+  name: {
+    name: string;
+    poolSeed: string;
+    address: PublicKey;
+  };
   tokenPrice: {
     tokenAmount: TokenAmount;
     poolAssetBalance: PoolAssetBalance[];
@@ -76,11 +80,11 @@ interface UserPoolData {
   };
 }
 
-const getStrategyFromPool = (poolInfo: PoolInfo): string => {
+const getBotName = (poolInfo: PoolInfo): string => {
   const { seed, signalProvider } = poolInfo;
   const poolSeedString = new PublicKey(seed).toBase58();
   if (BONFIDA_OFFICIAL_POOLS_MAP.hasOwnProperty(poolSeedString)) {
-    return BONFIDA_OFFICIAL_POOLS_MAP[poolSeedString].strategyType;
+    return BONFIDA_OFFICIAL_POOLS_MAP[poolSeedString].name;
   } else if (
     EXTERNAL_SIGNAL_PROVIDERS_MAP.hasOwnProperty(signalProvider.toBase58())
   ) {
@@ -129,7 +133,7 @@ const getBonfidaPools = async (
     const markets = poolInfo.authorizedMarkets
       .map(marketNameFromAddress)
       .filter((e): e is string => e !== null);
-    const strategy = getStrategyFromPool(poolInfo);
+    const botName = getBotName(poolInfo);
     const poolSeed = new PublicKey(seed).toBase58();
     const [tokenAmount, poolAssetBalance] = await fetchPoolBalances(
       connection,
@@ -137,7 +141,11 @@ const getBonfidaPools = async (
     );
     const poolData = {
       markets,
-      strategy,
+      name: {
+        poolSeed,
+        name: botName,
+        address: poolInfo.address,
+      },
       platform: PLATFORM_META[AUTOMATED_STRATEGY_PLATFORMS_ENUM.BONFIDA],
       balance: poolInfo,
       tokenPrice: {
@@ -199,9 +207,14 @@ export const AutomatedStrategies = () => {
       ),
     },
     {
-      title: "Strategy",
-      dataIndex: "strategy",
-      key: "strategy",
+      title: "Name",
+      dataIndex: "name",
+      key: "name",
+      render: (nameProps: UserPoolData["name"]) => (
+        <>
+          <BotNameCell {...nameProps} />
+        </>
+      ),
     },
     {
       title: "Token Price",
