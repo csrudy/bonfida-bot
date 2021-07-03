@@ -34,9 +34,9 @@ export const BotNameCell: FC<PoolNameData> = ({ name, poolUrl, address }) => {
         }}
         onClick={() => copyToClipboard(address.toBase58())}
       >
-        <text style={{ cursor: "pointer" }} id="pool-address">
+        <span style={{ cursor: "pointer" }} id="pool-address">
           {abbreviatedAddress}
-        </text>
+        </span>
         <CopyFilled />
       </div>
     </>

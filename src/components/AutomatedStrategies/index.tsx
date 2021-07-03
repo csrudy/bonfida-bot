@@ -1,6 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
 import {
-  AccountInfo,
   Connection,
   ParsedAccountData,
   PublicKey,
@@ -29,6 +28,8 @@ import {
   createTokenPriceMap,
   createPoolDataBySeedMap,
   getUserPoolTokenBalance,
+  getBonfidaPoolPositionValue,
+  PositionValue,
 } from "../../actions/bonfida";
 import { PoolMarketData, PoolNameData } from "../../types/automatedStrategies";
 
@@ -59,11 +60,7 @@ interface PoolTableRow {
     tokenAmount: TokenAmount;
     poolAssetBalance: PoolAssetBalance[];
   };
-  positionValue: {
-    mint: PublicKey;
-    tokenAmount: TokenAmount;
-    poolAssetBalance: PoolAssetBalance[];
-  };
+  positionValue: PositionValue;
 }
 
 const getBonfidaPools = async (
@@ -131,7 +128,15 @@ const getBonfidaPools = async (
       tokenAmount,
       poolAssetBalance
     );
+
     const balance = userPoolBalanceMap[mintKey.toBase58()].value.uiAmount;
+    const positionValue = getBonfidaPoolPositionValue(
+      tokenPrice,
+      balance,
+      tokenAmount,
+      poolAssetBalance,
+      tokenMintMapBySymbol
+    );
     const poolRowData = {
       markets,
       name,
@@ -143,11 +148,7 @@ const getBonfidaPools = async (
         tokenAmount,
         poolAssetBalance,
       },
-      positionValue: {
-        mint: poolInfo.mintKey,
-        tokenAmount,
-        poolAssetBalance,
-      },
+      positionValue,
     };
     poolTableRows.push(poolRowData);
   }

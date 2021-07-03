@@ -1,6 +1,6 @@
 import { BONFIDA_API_URL_BASE, BONFIDA_OFFICIAL_POOLS_MAP, BOT_STRATEGY_BASE_URL, COMPETITION_BOTS_POOLS_MAP, EXTERNAL_SIGNAL_PROVIDERS_MAP, STRATEGY_TYPES, TRADING_VIEW_BOT_PERFORMANCE_ENDPOINT_BASE } from "../constants/bonfidaBots"
 import { fetchPoolBalances, fetchPoolInfo, PoolAssetBalance, PoolInfo } from "@bonfida/bot";
-import { abbreviateAddress, apiGet } from "../utils/utils";
+import { abbreviateAddress, apiGet, formatAmount } from "../utils/utils";
 import { MARKETS, TOKEN_MINTS } from "@project-serum/serum";
 import { Connection, PublicKey, TokenAmount } from "@solana/web3.js";
 import { PoolMarketData } from "../types/automatedStrategies";
@@ -128,6 +128,41 @@ export const getBonfidaPoolTokenPrice = (tokenPriceMap: TokenPriceMap, tokenAmou
     ? totalValueOfPool / tokenAmount.uiAmount
     : 0;
   return tokenPrice;
+}
+
+type AssetBalances = {
+  [tokenSymbol: string]: {
+    symbol: string,
+    value: string
+  }
+}
+export interface PositionValue {
+  totalValue: number;
+  assetBalances: AssetBalances
+}
+export const getBonfidaPoolPositionValue = (tokenPice: number, tokenBalance: number | null, poolTokenAmount: TokenAmount, poolAssetBalance: PoolAssetBalance[], tokenMintMapBySymbol: Map<string, string>): PositionValue=> {
+  const tokenSymbolbyMintMap: {[mint:string]: string} = {}
+  for (const [symbol, mint] of tokenMintMapBySymbol.entries()) {
+    tokenSymbolbyMintMap[mint] = symbol
+  }
+  
+  const positionRatio = tokenBalance == null ||poolTokenAmount.uiAmount == null ? 0 : tokenBalance / poolTokenAmount.uiAmount;
+  const assetBalances = poolAssetBalance.reduce<AssetBalances>(
+    (acc, asset) => {
+      const { tokenAmount } = asset;
+      if (tokenAmount && tokenAmount.uiAmount) {
+        const userAssetAmount = tokenAmount.uiAmount * positionRatio;
+        const tokenSymbol = tokenSymbolbyMintMap[asset.mint];
+        ;
+        acc[tokenSymbol] = {
+          symbol: tokenSymbol,
+          value: formatAmount(userAssetAmount, tokenAmount.decimals, false),
+        }
+      }
+      return acc;
+    }, {});
+  const totalValue = tokenBalance !== null ? tokenPice * tokenBalance : 0;
+  return {totalValue, assetBalances}
 }
 
 export const getTokenPrice = async (mintAddress: string): Promise<number> => {
