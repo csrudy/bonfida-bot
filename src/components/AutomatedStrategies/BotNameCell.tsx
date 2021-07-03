@@ -1,29 +1,9 @@
 import { CopyFilled } from "@ant-design/icons";
-import { PublicKey } from "@solana/web3.js";
 import React, { FC } from "react";
-import { abbreviateAddress } from "../../utils/utils";
+import { PoolNameData } from "../../types/automateStrategies";
+import { abbreviateAddress, copyToClipboard } from "../../utils/utils";
 
-interface BotNameCellProps {
-  name: string;
-  poolSeed: string;
-  address: PublicKey;
-}
-const BOT_STRATEGY_BASE_URL = "https://bots.bonfida.org/#/pool/";
-export const BotNameCell: FC<BotNameCellProps> = ({
-  name,
-  poolSeed,
-  address,
-}) => {
-  const copyToClipboard = (text: string) => {
-    var input = document.createElement("textarea");
-    input.innerHTML = text;
-    document.body.appendChild(input);
-    input.select();
-    var result = document.execCommand("copy");
-    document.body.removeChild(input);
-    return result;
-  };
-  const poolUrl = `${BOT_STRATEGY_BASE_URL}${poolSeed}`;
+export const BotNameCell: FC<PoolNameData> = ({ name, poolUrl, address }) => {
   const abbreviatedAddress = abbreviateAddress(address);
   return (
     <>

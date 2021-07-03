@@ -1,9 +1,9 @@
-import { TRADING_VIEW_BOT_PERFORMANCE_ENDPOINT_BASE } from "../constants/bonfidaBots"
+import { BONFIDA_OFFICIAL_POOLS_MAP, BOT_STRATEGY_BASE_URL, COMPETITION_BOTS_POOLS_MAP, EXTERNAL_SIGNAL_PROVIDERS_MAP, STRATEGY_TYPES, TRADING_VIEW_BOT_PERFORMANCE_ENDPOINT_BASE } from "../constants/bonfidaBots"
 import { PoolInfo } from "@bonfida/bot";
-import { TokenInfo } from "@solana/spl-token-registry";
-import { abbreviateAddress, marketNameFromAddress } from "../utils/utils";
+import { abbreviateAddress } from "../utils/utils";
 import { MARKETS } from "@project-serum/serum";
 import { PublicKey } from "@solana/web3.js";
+import { PoolMarketData } from "../types/automateStrategies";
 
 type BotPerfomance = {
   time: number;
@@ -14,12 +14,7 @@ export type TradingBotPerformanceResponse = {
   performance: BotPerfomance[]
 }
 
-export type PoolMarketData = {
-  mintA: string | undefined,
-  mintB: string | undefined, 
-  name: string, 
-  otherMarkets: string[]
-}
+
 
 export const getTradingviewBotPerformance = async (poolSeed: string): Promise<TradingBotPerformanceResponse> => {
   const url = `${TRADING_VIEW_BOT_PERFORMANCE_ENDPOINT_BASE}${poolSeed}`
@@ -27,8 +22,7 @@ export const getTradingviewBotPerformance = async (poolSeed: string): Promise<Tr
   return response.json()
 }
 
-
-export const getPoolMarkets = ( tokenMapBySympol: Map<string, string>, poolInfo:PoolInfo ): PoolMarketData => {
+export const getBonfidaPoolMarketData = ( tokenMapBySympol: Map<string, string>, poolInfo:PoolInfo ): PoolMarketData => {
   const { authorizedMarkets } = poolInfo;
 
   const markets = authorizedMarkets.map<string>((marketAddress) => {
@@ -51,3 +45,35 @@ export const getPoolMarkets = ( tokenMapBySympol: Map<string, string>, poolInfo:
   
   return poolMarketData;
 }
+
+const getBotName = (poolInfo: PoolInfo): string => {
+  const { seed, signalProvider } = poolInfo;
+  const poolSeedString = new PublicKey(seed).toBase58();
+  if (BONFIDA_OFFICIAL_POOLS_MAP.hasOwnProperty(poolSeedString)) {
+    return BONFIDA_OFFICIAL_POOLS_MAP[poolSeedString].name;
+  } else if (
+    COMPETITION_BOTS_POOLS_MAP.hasOwnProperty(poolSeedString)
+  ) {
+    return COMPETITION_BOTS_POOLS_MAP[poolSeedString].name;
+  }
+   else if (
+    EXTERNAL_SIGNAL_PROVIDERS_MAP.hasOwnProperty(signalProvider.toBase58())
+  ) {
+    return EXTERNAL_SIGNAL_PROVIDERS_MAP[signalProvider.toBase58()].displayName;
+  }
+  return STRATEGY_TYPES.CUSTOM;
+};
+
+export const getBonfidaPoolNameData = (poolInfo: PoolInfo) => {
+  const { seed, address } = poolInfo;
+  const poolSeed = new PublicKey(seed).toBase58();
+  const name = getBotName(poolInfo)
+  const poolUrl = BOT_STRATEGY_BASE_URL + poolSeed;
+  const poolNameData = {
+    name,
+    poolUrl,
+    address
+  }
+  return poolNameData
+}
+
