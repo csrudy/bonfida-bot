@@ -1,6 +1,6 @@
 import { CopyFilled } from "@ant-design/icons";
 import React, { FC } from "react";
-import { PoolNameData } from "../../types/automateStrategies";
+import { PoolNameData } from "../../types/automatedStrategies";
 import { abbreviateAddress, copyToClipboard } from "../../utils/utils";
 
 export const BotNameCell: FC<PoolNameData> = ({ name, poolUrl, address }) => {

@@ -16,11 +16,6 @@ import {
 } from "@bonfida/bot";
 import { Table } from "antd";
 import { getUserParsedAccounts } from "../../utils/utils";
-import {
-  BONFIDA_OFFICIAL_POOLS_MAP,
-  EXTERNAL_SIGNAL_PROVIDERS_MAP,
-  STRATEGY_TYPES,
-} from "../../constants/bonfidaBots";
 import { BalanceCell } from "./BalanceCell";
 import {
   cache,
@@ -34,9 +29,13 @@ import { PositionValueCell } from "./PositionValueCell";
 import { MarketsCell } from "./MarketsCell";
 import { PlatformCell } from "./PlatformCell";
 import { BotNameCell } from "./BotNameCell";
-import { getPoolMarkets, PoolMarketData } from "../../actions/bonfida";
+import {
+  getBonfidaPoolNameData,
+  getBonfidaPoolMarketData,
+} from "../../actions/bonfida";
+import { PoolMarketData, PoolNameData } from "../../types/automatedStrategies";
 
-enum AUTOMATED_STRATEGY_PLATFORMS_ENUM {
+export enum PLATFORMS_ENUM {
   BONFIDA = "bonfida",
 }
 
@@ -47,27 +46,22 @@ const PLATFORM_META = {
   },
 };
 
-export declare type PoolSeed = string;
-interface PlatformMeta {
+type PlatformMetaData = {
   label: string;
   tokenMint: string;
-}
+};
 
 interface PoolRow {
-  platform: PlatformMeta;
+  platform: PlatformMetaData;
   markets: PoolMarketData;
-  name: {
-    name: string;
-    poolSeed: string;
-    address: PublicKey;
-  };
+  name: PoolNameData;
   tokenPrice: {
     tokenAmount: TokenAmount;
     poolAssetBalance: PoolAssetBalance[];
   };
   balance: PoolInfo;
   inceptionPerformance: {
-    poolSeed: PoolSeed;
+    poolSeed: string;
     tokenAmount: TokenAmount;
     poolAssetBalance: PoolAssetBalance[];
   };
@@ -77,19 +71,6 @@ interface PoolRow {
     poolAssetBalance: PoolAssetBalance[];
   };
 }
-
-const getBotName = (poolInfo: PoolInfo): string => {
-  const { seed, signalProvider } = poolInfo;
-  const poolSeedString = new PublicKey(seed).toBase58();
-  if (BONFIDA_OFFICIAL_POOLS_MAP.hasOwnProperty(poolSeedString)) {
-    return BONFIDA_OFFICIAL_POOLS_MAP[poolSeedString].name;
-  } else if (
-    EXTERNAL_SIGNAL_PROVIDERS_MAP.hasOwnProperty(signalProvider.toBase58())
-  ) {
-    return EXTERNAL_SIGNAL_PROVIDERS_MAP[signalProvider.toBase58()].displayName;
-  }
-  return STRATEGY_TYPES.CUSTOM;
-};
 
 const getBonfidaPools = async (
   connection: Connection,
@@ -132,8 +113,8 @@ const getBonfidaPools = async (
   const poolRows = [];
   for (const seed of userPoolSeeds) {
     const poolInfo = await fetchPoolInfo(connection, seed);
-    const markets = getPoolMarkets(tokenMapBySympol, poolInfo);
-    const botName = getBotName(poolInfo);
+    const markets = getBonfidaPoolMarketData(tokenMapBySympol, poolInfo);
+    const name = getBonfidaPoolNameData(poolInfo);
     const poolSeed = new PublicKey(seed).toBase58();
     const [tokenAmount, poolAssetBalance] = await fetchPoolBalances(
       connection,
@@ -141,12 +122,8 @@ const getBonfidaPools = async (
     );
     const poolData = {
       markets,
-      name: {
-        poolSeed,
-        name: botName,
-        address: poolInfo.address,
-      },
-      platform: PLATFORM_META[AUTOMATED_STRATEGY_PLATFORMS_ENUM.BONFIDA],
+      name,
+      platform: PLATFORM_META[PLATFORMS_ENUM.BONFIDA],
       balance: poolInfo,
       tokenPrice: {
         tokenAmount,

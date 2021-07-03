@@ -2,13 +2,12 @@ import { PoolAssetBalance } from "@bonfida/bot";
 import { TokenAmount } from "@solana/web3.js";
 import { Tag } from "antd";
 import React, { FC, useEffect, useRef } from "react";
-import { PoolSeed } from ".";
 import { getTradingviewBotPerformance } from "../../actions/bonfida";
 import { BONFIDA_OFFICIAL_POOLS_MAP } from "../../constants/bonfidaBots";
 import { usePoolTokenValue } from "../../hooks/usePoolTokenValue";
 
 interface InceptionPerformanceCellProps {
-  poolSeed: PoolSeed;
+  poolSeed: string;
   tokenAmount: TokenAmount;
   poolAssetBalance: PoolAssetBalance[];
 }

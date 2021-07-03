@@ -3,7 +3,7 @@ import { PoolInfo } from "@bonfida/bot";
 import { abbreviateAddress } from "../utils/utils";
 import { MARKETS } from "@project-serum/serum";
 import { PublicKey } from "@solana/web3.js";
-import { PoolMarketData } from "../types/automateStrategies";
+import { PoolMarketData } from "../types/automatedStrategies";
 
 type BotPerfomance = {
   time: number;

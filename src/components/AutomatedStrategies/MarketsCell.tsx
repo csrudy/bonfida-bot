@@ -1,10 +1,9 @@
 import React, { FC } from "react";
 import { PoolIcon } from "../TokenIcon";
 import { Tooltip } from "antd";
-import { PoolMarketData } from "../../actions/bonfida";
-type MarketsCellProps = PoolMarketData;
+import { PoolMarketData } from "../../types/automatedStrategies";
 
-export const MarketsCell: FC<MarketsCellProps> = ({
+export const MarketsCell: FC<PoolMarketData> = ({
   name,
   mintA,
   mintB,

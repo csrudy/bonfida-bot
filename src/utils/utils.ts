@@ -278,3 +278,13 @@ export const getUserParsedAccounts = async (connection: Connection, walletPublic
   );
   return userParsedProgramAccounts
 }
+
+export const copyToClipboard = (text: string) => {
+  var input = document.createElement("textarea");
+  input.innerHTML = text;
+  document.body.appendChild(input);
+  input.select();
+  var result = document.execCommand("copy");
+  document.body.removeChild(input);
+  return result;
+};
