@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
   Connection,
   ParsedAccountData,
@@ -15,10 +15,7 @@ import {
   PoolInfo,
 } from "@bonfida/bot";
 import { Table } from "antd";
-import {
-  getUserParsedAccounts,
-  marketNameFromAddress,
-} from "../../utils/utils";
+import { getUserParsedAccounts } from "../../utils/utils";
 import {
   BONFIDA_OFFICIAL_POOLS_MAP,
   EXTERNAL_SIGNAL_PROVIDERS_MAP,
@@ -29,7 +26,6 @@ import {
   cache,
   getMultipleAccounts,
   MintParser,
-  TokenAccountParser,
 } from "../../contexts/accounts";
 import { useWallet } from "../../contexts/wallet";
 import { TokenPrice } from "./TokenPriceCell";
@@ -177,9 +173,9 @@ export const AutomatedStrategies = () => {
   const wallet = useWallet();
   const { publicKey } = wallet;
   const { tokenMap } = useConnectionConfig();
-  const tokenMapBySympol = new Map<string, string>();
+  const tokenMapBySympol = useRef(new Map<string, string>());
   tokenMap.forEach((tokenInfo, mint) => {
-    tokenMapBySympol.set(tokenInfo.symbol, mint);
+    tokenMapBySympol.current.set(tokenInfo.symbol, mint);
   });
   const connection = useConnection();
   const [strategyData, setStrategyData] = useState<PoolRow[]>([]);
@@ -187,10 +183,12 @@ export const AutomatedStrategies = () => {
   useEffect(() => {
     if (publicKey) {
       setLoading(true);
-      getBonfidaPools(connection, publicKey, tokenMapBySympol).then((data) => {
-        setStrategyData(data);
-        setLoading(false);
-      });
+      getBonfidaPools(connection, publicKey, tokenMapBySympol.current).then(
+        (data) => {
+          setStrategyData(data);
+          setLoading(false);
+        }
+      );
     }
   }, [connection, publicKey]);
 
