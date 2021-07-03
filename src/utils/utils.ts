@@ -288,3 +288,17 @@ export const copyToClipboard = (text: string) => {
   document.body.removeChild(input);
   return result;
 };
+
+export async function apiGet(path: string) {
+  try {
+    let response = await fetch(path);
+    if (!response.ok) {
+      return [];
+    }
+    let json = await response.json();
+    return json;
+  } catch (err) {
+    console.log(err);
+    return [];
+  }
+}

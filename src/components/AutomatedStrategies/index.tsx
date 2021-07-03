@@ -7,8 +7,6 @@ import {
 } from "@solana/web3.js";
 import { useConnection, useConnectionConfig } from "../../contexts/connection";
 import {
-  fetchPoolBalances,
-  fetchPoolInfo,
   getPoolsSeedsBySigProvider,
   getPoolTokenMintFromSeed,
   PoolAssetBalance,
@@ -32,6 +30,9 @@ import { BotNameCell } from "./BotNameCell";
 import {
   getBonfidaPoolNameData,
   getBonfidaPoolMarketData,
+  getBonfidaPoolTokenPrice,
+  createTokenPriceMap,
+  createPoolDataBySeedMap,
 } from "../../actions/bonfida";
 import { PoolMarketData, PoolNameData } from "../../types/automatedStrategies";
 
@@ -51,14 +52,11 @@ type PlatformMetaData = {
   tokenMint: string;
 };
 
-interface PoolRow {
+interface PoolTableRow {
   platform: PlatformMetaData;
   markets: PoolMarketData;
   name: PoolNameData;
-  tokenPrice: {
-    tokenAmount: TokenAmount;
-    poolAssetBalance: PoolAssetBalance[];
-  };
+  tokenPrice: number;
   balance: PoolInfo;
   inceptionPerformance: {
     poolSeed: string;
@@ -75,8 +73,8 @@ interface PoolRow {
 const getBonfidaPools = async (
   connection: Connection,
   walletPublicKey: PublicKey,
-  tokenMapBySympol: Map<string, string>
-): Promise<PoolRow[]> => {
+  tokenMintMapBySymbol: Map<string, string>
+): Promise<PoolTableRow[]> => {
   const userTokenAccounts = await getUserParsedAccounts(
     connection,
     walletPublicKey
@@ -110,25 +108,34 @@ const getBonfidaPools = async (
       cache.add(id, mint, MintParser);
     }
   });
-  const poolRows = [];
+  const poolTableRows = [];
+  const poolInfoMap = await createPoolDataBySeedMap(connection, userPoolSeeds);
+  const allPoolAssetMints = new Set(
+    Object.values(poolInfoMap)
+      .map((o) => o.assetMints)
+      .flat()
+  );
+  // avoid making multiple api calls for same tokens
+  const tokenPriceMap = await createTokenPriceMap(allPoolAssetMints);
+
   for (const seed of userPoolSeeds) {
-    const poolInfo = await fetchPoolInfo(connection, seed);
-    const markets = getBonfidaPoolMarketData(tokenMapBySympol, poolInfo);
+    const seedKey = new PublicKey(seed).toBase58();
+    const poolData = poolInfoMap[seedKey];
+    const { poolInfo, tokenAmount, poolAssetBalance } = poolData;
+    const markets = getBonfidaPoolMarketData(tokenMintMapBySymbol, poolInfo);
     const name = getBonfidaPoolNameData(poolInfo);
     const poolSeed = new PublicKey(seed).toBase58();
-    const [tokenAmount, poolAssetBalance] = await fetchPoolBalances(
-      connection,
-      seed
+    const tokenPrice = getBonfidaPoolTokenPrice(
+      tokenPriceMap,
+      tokenAmount,
+      poolAssetBalance
     );
-    const poolData = {
+    const poolRowData = {
       markets,
       name,
       platform: PLATFORM_META[PLATFORMS_ENUM.BONFIDA],
       balance: poolInfo,
-      tokenPrice: {
-        tokenAmount,
-        poolAssetBalance,
-      },
+      tokenPrice,
       inceptionPerformance: {
         poolSeed,
         tokenAmount,
@@ -140,27 +147,27 @@ const getBonfidaPools = async (
         poolAssetBalance,
       },
     };
-    poolRows.push(poolData);
+    poolTableRows.push(poolRowData);
   }
 
-  return poolRows;
+  return poolTableRows;
 };
 
 export const AutomatedStrategies = () => {
   const wallet = useWallet();
   const { publicKey } = wallet;
   const { tokenMap } = useConnectionConfig();
-  const tokenMapBySympol = useRef(new Map<string, string>());
+  const tokenMintMapBySymbol = useRef(new Map<string, string>());
   tokenMap.forEach((tokenInfo, mint) => {
-    tokenMapBySympol.current.set(tokenInfo.symbol, mint);
+    tokenMintMapBySymbol.current.set(tokenInfo.symbol, mint);
   });
   const connection = useConnection();
-  const [strategyData, setStrategyData] = useState<PoolRow[]>([]);
+  const [strategyData, setStrategyData] = useState<PoolTableRow[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
   useEffect(() => {
     if (publicKey) {
       setLoading(true);
-      getBonfidaPools(connection, publicKey, tokenMapBySympol.current).then(
+      getBonfidaPools(connection, publicKey, tokenMintMapBySymbol.current).then(
         (data) => {
           setStrategyData(data);
           setLoading(false);
@@ -174,7 +181,7 @@ export const AutomatedStrategies = () => {
       title: "Platform",
       dataIndex: "platform",
       key: "platform",
-      render: (platformProps: PoolRow["platform"]) => (
+      render: (platformProps: PoolTableRow["platform"]) => (
         <>
           <PlatformCell {...platformProps} />
         </>
@@ -184,7 +191,7 @@ export const AutomatedStrategies = () => {
       title: "Markets",
       dataIndex: "markets",
       key: "markets",
-      render: (markets: PoolRow["markets"]) => (
+      render: (markets: PoolTableRow["markets"]) => (
         <>
           <MarketsCell {...markets} />
         </>
@@ -194,7 +201,7 @@ export const AutomatedStrategies = () => {
       title: "Name",
       dataIndex: "name",
       key: "name",
-      render: (nameProps: PoolRow["name"]) => (
+      render: (nameProps: PoolTableRow["name"]) => (
         <>
           <BotNameCell {...nameProps} />
         </>
@@ -204,12 +211,9 @@ export const AutomatedStrategies = () => {
       title: "Token Price",
       dataIndex: "tokenPrice",
       key: "tokenPrice",
-      render: ({ tokenAmount, poolAssetBalance }: PoolRow["tokenPrice"]) => (
+      render: (tokenPrice: PoolTableRow["tokenPrice"]) => (
         <>
-          <TokenPrice
-            tokenAmount={tokenAmount}
-            poolAssetBalance={poolAssetBalance}
-          />
+          <TokenPrice tokenPrice={tokenPrice} />
         </>
       ),
     },
@@ -227,7 +231,7 @@ export const AutomatedStrategies = () => {
       title: "Inception Performance",
       dataIndex: "inceptionPerformance",
       key: "inceptionPerformance",
-      render: (inceptionPerfomance: PoolRow["inceptionPerformance"]) => (
+      render: (inceptionPerfomance: PoolTableRow["inceptionPerformance"]) => (
         <>
           <InceptionPerformanceCell {...inceptionPerfomance} />
         </>
@@ -237,7 +241,7 @@ export const AutomatedStrategies = () => {
       title: "Value of Your Positiion (USD)",
       dataIndex: "positionValue",
       key: "positionValue",
-      render: (positionValue: PoolRow["positionValue"]) => (
+      render: (positionValue: PoolTableRow["positionValue"]) => (
         <>
           <PositionValueCell {...positionValue} />
         </>

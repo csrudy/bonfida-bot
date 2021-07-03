@@ -115,7 +115,7 @@ export const BONFIDA_OFFICIAL_POOLS_MAP: Pool = {
     strategyType: STRATEGY_TYPES.BART,
   },
 };
-
+export const BONFIDA_API_URL_BASE = "https://serum-api.bonfida.com/";
 export const EXTERNAL_SIGNAL_PROVIDERS_MAP: ExternalSignalProvider = {
   "8km6prR9BNjvZFVGRh7YoU2PnsQPn7XnVeYKJfWJvhqa": {
     name: "Weekly DCA (8km...hqa)",
