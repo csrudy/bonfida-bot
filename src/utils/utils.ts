@@ -244,10 +244,7 @@ export function convert(
   return result;
 }
 
-export const abbreviateAddress = (address: PublicKey | undefined, size = 4) => {
-  if (!address) {
-    return null;
-  }
+export const abbreviateAddress = (address: PublicKey, size = 4) => {
   const base58 = address.toBase58();
   return base58.slice(0, size) + '…' + base58.slice(-size);
 }

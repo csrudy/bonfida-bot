@@ -51,8 +51,8 @@ export const TokenIcon = (props: {
 };
 
 export const PoolIcon = (props: {
-  mintA: string;
-  mintB: string;
+  mintA: string | undefined;
+  mintB: string | undefined;
   style?: React.CSSProperties;
   className?: string;
 }) => {

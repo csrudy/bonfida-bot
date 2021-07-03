@@ -5,7 +5,7 @@ import {
   PublicKey,
   TokenAmount,
 } from "@solana/web3.js";
-import { useConnection } from "../../contexts/connection";
+import { useConnection, useConnectionConfig } from "../../contexts/connection";
 import {
   fetchPoolBalances,
   fetchPoolInfo,
@@ -29,6 +29,7 @@ import {
   cache,
   getMultipleAccounts,
   MintParser,
+  TokenAccountParser,
 } from "../../contexts/accounts";
 import { useWallet } from "../../contexts/wallet";
 import { TokenPrice } from "./TokenPriceCell";
@@ -37,6 +38,7 @@ import { PositionValueCell } from "./PositionValueCell";
 import { MarketsCell } from "./MarketsCell";
 import { PlatformCell } from "./PlatformCell";
 import { BotNameCell } from "./BotNameCell";
+import { getPoolMarkets, PoolMarketData } from "../../actions/bonfida";
 
 enum AUTOMATED_STRATEGY_PLATFORMS_ENUM {
   BONFIDA = "bonfida",
@@ -55,9 +57,9 @@ interface PlatformMeta {
   tokenMint: string;
 }
 
-interface UserPoolData {
+interface PoolRow {
   platform: PlatformMeta;
-  markets: string[];
+  markets: PoolMarketData;
   name: {
     name: string;
     poolSeed: string;
@@ -95,12 +97,16 @@ const getBotName = (poolInfo: PoolInfo): string => {
 
 const getBonfidaPools = async (
   connection: Connection,
-  walletPublicKey: PublicKey
-): Promise<UserPoolData[]> => {
+  walletPublicKey: PublicKey,
+  tokenMapBySympol: Map<string, string>
+): Promise<PoolRow[]> => {
   const userTokenAccounts = await getUserParsedAccounts(
     connection,
     walletPublicKey
   );
+  // userTokenAccounts.forEach((account, index) => {
+  //   cache.add(account.pubkey, account, TokenAccountParser);
+  // });
   const userTokenMints = new Set<string>(
     userTokenAccounts.map(
       (userTokenAccount) =>
@@ -127,12 +133,10 @@ const getBonfidaPools = async (
       cache.add(id, mint, MintParser);
     }
   });
-  const userPoolsData = [];
+  const poolRows = [];
   for (const seed of userPoolSeeds) {
     const poolInfo = await fetchPoolInfo(connection, seed);
-    const markets = poolInfo.authorizedMarkets
-      .map(marketNameFromAddress)
-      .filter((e): e is string => e !== null);
+    const markets = getPoolMarkets(tokenMapBySympol, poolInfo);
     const botName = getBotName(poolInfo);
     const poolSeed = new PublicKey(seed).toBase58();
     const [tokenAmount, poolAssetBalance] = await fetchPoolBalances(
@@ -163,22 +167,27 @@ const getBonfidaPools = async (
         poolAssetBalance,
       },
     };
-    userPoolsData.push(poolData);
+    poolRows.push(poolData);
   }
 
-  return userPoolsData;
+  return poolRows;
 };
 
 export const AutomatedStrategies = () => {
   const wallet = useWallet();
   const { publicKey } = wallet;
+  const { tokenMap } = useConnectionConfig();
+  const tokenMapBySympol = new Map<string, string>();
+  tokenMap.forEach((tokenInfo, mint) => {
+    tokenMapBySympol.set(tokenInfo.symbol, mint);
+  });
   const connection = useConnection();
-  const [strategyData, setStrategyData] = useState<UserPoolData[]>([]);
+  const [strategyData, setStrategyData] = useState<PoolRow[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
   useEffect(() => {
     if (publicKey) {
       setLoading(true);
-      getBonfidaPools(connection, publicKey).then((data) => {
+      getBonfidaPools(connection, publicKey, tokenMapBySympol).then((data) => {
         setStrategyData(data);
         setLoading(false);
       });
@@ -190,7 +199,7 @@ export const AutomatedStrategies = () => {
       title: "Platform",
       dataIndex: "platform",
       key: "platform",
-      render: (platformProps: UserPoolData["platform"]) => (
+      render: (platformProps: PoolRow["platform"]) => (
         <>
           <PlatformCell {...platformProps} />
         </>
@@ -200,9 +209,9 @@ export const AutomatedStrategies = () => {
       title: "Markets",
       dataIndex: "markets",
       key: "markets",
-      render: (markets: UserPoolData["markets"]) => (
+      render: (markets: PoolRow["markets"]) => (
         <>
-          <MarketsCell markets={markets} />
+          <MarketsCell {...markets} />
         </>
       ),
     },
@@ -210,7 +219,7 @@ export const AutomatedStrategies = () => {
       title: "Name",
       dataIndex: "name",
       key: "name",
-      render: (nameProps: UserPoolData["name"]) => (
+      render: (nameProps: PoolRow["name"]) => (
         <>
           <BotNameCell {...nameProps} />
         </>
@@ -220,10 +229,7 @@ export const AutomatedStrategies = () => {
       title: "Token Price",
       dataIndex: "tokenPrice",
       key: "tokenPrice",
-      render: ({
-        tokenAmount,
-        poolAssetBalance,
-      }: UserPoolData["tokenPrice"]) => (
+      render: ({ tokenAmount, poolAssetBalance }: PoolRow["tokenPrice"]) => (
         <>
           <TokenPrice
             tokenAmount={tokenAmount}
@@ -246,7 +252,7 @@ export const AutomatedStrategies = () => {
       title: "Inception Performance",
       dataIndex: "inceptionPerformance",
       key: "inceptionPerformance",
-      render: (inceptionPerfomance: UserPoolData["inceptionPerformance"]) => (
+      render: (inceptionPerfomance: PoolRow["inceptionPerformance"]) => (
         <>
           <InceptionPerformanceCell {...inceptionPerfomance} />
         </>
@@ -256,7 +262,7 @@ export const AutomatedStrategies = () => {
       title: "Value of Your Positiion (USD)",
       dataIndex: "positionValue",
       key: "positionValue",
-      render: (positionValue: UserPoolData["positionValue"]) => (
+      render: (positionValue: PoolRow["positionValue"]) => (
         <>
           <PositionValueCell {...positionValue} />
         </>
