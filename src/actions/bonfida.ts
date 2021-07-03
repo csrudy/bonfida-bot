@@ -158,3 +158,8 @@ export const getTokenPrice = async (mintAddress: string): Promise<number> => {
     throw new Error('Error getting price');
   }
 };
+
+export const getUserPoolTokenBalance = async (connection: Connection, publicKey: PublicKey) => {
+  const balance = await connection.getTokenAccountBalance(publicKey,"recent")
+  return balance
+}

@@ -1,8 +1,10 @@
 import React, { useEffect, useRef, useState } from "react";
 import {
+  AccountInfo,
   Connection,
   ParsedAccountData,
   PublicKey,
+  RpcResponseAndContext,
   TokenAmount,
 } from "@solana/web3.js";
 import { useConnection, useConnectionConfig } from "../../contexts/connection";
@@ -10,16 +12,9 @@ import {
   getPoolsSeedsBySigProvider,
   getPoolTokenMintFromSeed,
   PoolAssetBalance,
-  PoolInfo,
 } from "@bonfida/bot";
 import { Table } from "antd";
 import { getUserParsedAccounts } from "../../utils/utils";
-import { BalanceCell } from "./BalanceCell";
-import {
-  cache,
-  getMultipleAccounts,
-  MintParser,
-} from "../../contexts/accounts";
 import { useWallet } from "../../contexts/wallet";
 import { TokenPrice } from "./TokenPriceCell";
 import { InceptionPerformanceCell } from "./InceptionPerformanceCell";
@@ -33,6 +28,7 @@ import {
   getBonfidaPoolTokenPrice,
   createTokenPriceMap,
   createPoolDataBySeedMap,
+  getUserPoolTokenBalance,
 } from "../../actions/bonfida";
 import { PoolMarketData, PoolNameData } from "../../types/automatedStrategies";
 
@@ -57,7 +53,7 @@ interface PoolTableRow {
   markets: PoolMarketData;
   name: PoolNameData;
   tokenPrice: number;
-  balance: PoolInfo;
+  balance: number | null;
   inceptionPerformance: {
     poolSeed: string;
     tokenAmount: TokenAmount;
@@ -79,35 +75,39 @@ const getBonfidaPools = async (
     connection,
     walletPublicKey
   );
-  // userTokenAccounts.forEach((account, index) => {
-  //   cache.add(account.pubkey, account, TokenAccountParser);
-  // });
-  const userTokenMints = new Set<string>(
-    userTokenAccounts.map(
-      (userTokenAccount) =>
-        (userTokenAccount.account.data as ParsedAccountData).parsed.info.mint
-    )
-  );
+
+  type TokenAccountPubkeytMapByMint = {
+    [mint: string]: PublicKey;
+  };
+
+  const tokenAccountPubkeytMapByMint = userTokenAccounts.reduce<
+    TokenAccountPubkeytMapByMint
+  >((tokenAccountMapByMint, userTokenAccount) => {
+    const mint = (userTokenAccount.account.data as ParsedAccountData).parsed
+      .info.mint;
+    tokenAccountMapByMint[mint] = userTokenAccount.pubkey;
+    return tokenAccountMapByMint;
+  }, {});
+  type UserPoolBalanceMap = {
+    [poolSeed: string]: RpcResponseAndContext<TokenAmount>;
+  };
   const bonfidaPoolSeeds = await getPoolsSeedsBySigProvider(connection);
   const userPoolSeeds: Buffer[] = [];
   const userPoolMints: string[] = [];
+  const userPoolBalanceMap: UserPoolBalanceMap = {};
 
   for (const seed of bonfidaPoolSeeds) {
     // some pools are in bad states and cannot be fetched
     const mint = await getPoolTokenMintFromSeed(seed).catch(() => {});
-    if (mint && userTokenMints.has(mint.toBase58())) {
+    if (mint && tokenAccountPubkeytMapByMint[mint.toBase58()]) {
       userPoolSeeds.push(seed);
+      userPoolBalanceMap[mint.toBase58()] = await getUserPoolTokenBalance(
+        connection,
+        tokenAccountPubkeytMapByMint[mint.toBase58()]
+      );
       userPoolMints.push(mint.toBase58());
     }
   }
-
-  const mints = await getMultipleAccounts(connection, userPoolMints, "single");
-  mints.keys.forEach((id, index) => {
-    const mint = mints.array[index];
-    if (mint) {
-      cache.add(id, mint, MintParser);
-    }
-  });
   const poolTableRows = [];
   const poolInfoMap = await createPoolDataBySeedMap(connection, userPoolSeeds);
   const allPoolAssetMints = new Set(
@@ -122,6 +122,7 @@ const getBonfidaPools = async (
     const seedKey = new PublicKey(seed).toBase58();
     const poolData = poolInfoMap[seedKey];
     const { poolInfo, tokenAmount, poolAssetBalance } = poolData;
+    const { mintKey } = poolInfo;
     const markets = getBonfidaPoolMarketData(tokenMintMapBySymbol, poolInfo);
     const name = getBonfidaPoolNameData(poolInfo);
     const poolSeed = new PublicKey(seed).toBase58();
@@ -130,11 +131,12 @@ const getBonfidaPools = async (
       tokenAmount,
       poolAssetBalance
     );
+    const balance = userPoolBalanceMap[mintKey.toBase58()].value.uiAmount;
     const poolRowData = {
       markets,
       name,
       platform: PLATFORM_META[PLATFORMS_ENUM.BONFIDA],
-      balance: poolInfo,
+      balance,
       tokenPrice,
       inceptionPerformance: {
         poolSeed,
@@ -221,11 +223,6 @@ export const AutomatedStrategies = () => {
       title: "Balance",
       dataIndex: "balance",
       key: "balance",
-      render: (poolInfo: PoolInfo) => (
-        <>
-          <BalanceCell poolInfo={poolInfo} />
-        </>
-      ),
     },
     {
       title: "Inception Performance",
