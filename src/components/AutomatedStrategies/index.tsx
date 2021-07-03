@@ -12,8 +12,8 @@ import {
   getPoolTokenMintFromSeed,
   PoolAssetBalance,
 } from "@bonfida/bot";
-import { Table } from "antd";
-import { getUserParsedAccounts } from "../../utils/utils";
+
+import { formatUSD, getUserParsedAccounts } from "../../utils/utils";
 import { useWallet } from "../../contexts/wallet";
 import { TokenPrice } from "./TokenPriceCell";
 import { InceptionPerformanceCell } from "./InceptionPerformanceCell";
@@ -32,6 +32,9 @@ import {
   PositionValue,
 } from "../../actions/bonfida";
 import { PoolMarketData, PoolNameData } from "../../types/automatedStrategies";
+import { Collapse, Table } from "antd";
+import { CalculatorFilled } from "@ant-design/icons";
+const { Panel } = Collapse;
 
 export enum PLATFORMS_ENUM {
   BONFIDA = "bonfida",
@@ -165,20 +168,28 @@ export const AutomatedStrategies = () => {
     tokenMintMapBySymbol.current.set(tokenInfo.symbol, mint);
   });
   const connection = useConnection();
-  const [strategyData, setStrategyData] = useState<PoolTableRow[]>([]);
+  const [poolTableData, setPoolTableData] = useState<PoolTableRow[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
   useEffect(() => {
     if (publicKey) {
       setLoading(true);
       getBonfidaPools(connection, publicKey, tokenMintMapBySymbol.current).then(
         (data) => {
-          setStrategyData(data);
+          setPoolTableData(
+            data.sort(
+              (a, b) => b.positionValue.totalValue - a.positionValue.totalValue
+            )
+          );
           setLoading(false);
         }
       );
     }
   }, [connection, publicKey]);
 
+  const totalAutomatedStrategyValue = poolTableData.reduce<number>(
+    (acc, val) => (acc += val.positionValue.totalValue),
+    0
+  );
   const columns = [
     {
       title: "Platform",
@@ -246,16 +257,33 @@ export const AutomatedStrategies = () => {
       ),
     },
   ];
+  const header = (
+    <div style={{ display: "flex", justifyContent: "space-between" }}>
+      <span>
+        <CalculatorFilled />
+        <span style={{ fontSize: "18px", fontWeight: 800, marginLeft: "1rem" }}>
+          AUTOMATED STRATEGIES
+        </span>
+      </span>
+
+      <h2>
+        <strong>{formatUSD.format(totalAutomatedStrategyValue)}</strong>
+      </h2>
+    </div>
+  );
 
   return (
-    <div>
-      <h1>AUTOMATED STRATEGIES MODULE</h1>
-      <Table
-        columns={columns}
-        dataSource={strategyData}
-        pagination={false}
-        loading={loading}
-      ></Table>
-    </div>
+    <>
+      <Collapse defaultActiveKey={1}>
+        <Panel showArrow={false} header={header} key="1">
+          <Table
+            columns={columns}
+            dataSource={poolTableData}
+            pagination={false}
+            loading={loading}
+          ></Table>
+        </Panel>
+      </Collapse>
+    </>
   );
 };
