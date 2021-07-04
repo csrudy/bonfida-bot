@@ -29,8 +29,8 @@ import {
   getUserPoolTokenBalance,
   getBonfidaPoolPositionValue,
   PositionValue,
+  getInceptionPerformance,
 } from "../../actions/bonfida";
-import { PoolMarketData, PoolNameData } from "../../types/automatedStrategies";
 import { Collapse, Table } from "antd";
 import { CalculatorFilled } from "@ant-design/icons";
 const { Panel } = Collapse;
@@ -50,21 +50,32 @@ type PlatformMetaData = {
   label: string;
   tokenMint: string;
 };
+export interface PoolMarketData {
+  mintA: string | undefined;
+  mintB: string | undefined;
+  name: string;
+  otherMarkets: string[];
+}
+export interface PoolNameData {
+  name: string;
+  poolUrl: string;
+  address: PublicKey;
+}
+
+export type InceptionPerformance = number | null;
+export type Balance = number | null;
+export type TokenPrice = number;
 
 interface PoolTableRow {
   platform: PlatformMetaData;
   markets: PoolMarketData;
   name: PoolNameData;
-  tokenPrice: number;
-  balance: number | null;
-  inceptionPerformance: PoolInceptionPerformanceData;
+  tokenPrice: TokenPrice;
+  balance: Balance;
+  inceptionPerformance: InceptionPerformance;
   positionValue: PositionValue;
 }
 
-export interface PoolInceptionPerformanceData {
-  poolSeed: string;
-  tokenPrice: number;
-}
 const getBonfidaPools = async (
   connection: Connection,
   walletPublicKey: PublicKey,
@@ -130,7 +141,10 @@ const getBonfidaPools = async (
       tokenAmount,
       poolAssetBalance
     );
-
+    const inceptionPerformance = await getInceptionPerformance(
+      poolSeed,
+      tokenPrice
+    );
     const balance = userPoolBalanceMap[mintKey.toBase58()].value.uiAmount;
     const positionValue = getBonfidaPoolPositionValue(
       tokenPrice,
@@ -145,10 +159,7 @@ const getBonfidaPools = async (
       platform: PLATFORM_META[PLATFORMS_ENUM.BONFIDA],
       balance,
       tokenPrice,
-      inceptionPerformance: {
-        poolSeed,
-        tokenPrice,
-      },
+      inceptionPerformance,
       positionValue,
     };
     poolTableRows.push(poolRowData);
@@ -238,9 +249,11 @@ export const AutomatedStrategies = () => {
       title: "Inception Performance",
       dataIndex: "inceptionPerformance",
       key: "inceptionPerformance",
-      render: (inceptionPerfomance: PoolTableRow["inceptionPerformance"]) => (
+      render: (inceptionPerformance: PoolTableRow["inceptionPerformance"]) => (
         <>
-          <InceptionPerformanceCell {...inceptionPerfomance} />
+          <InceptionPerformanceCell
+            inceptionPerformance={inceptionPerformance}
+          />
         </>
       ),
     },

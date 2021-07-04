@@ -1,9 +1,10 @@
-import { BONFIDA_API_URL_BASE, BONFIDA_OFFICIAL_POOLS_MAP, BOT_STRATEGY_BASE_URL, COMPETITION_BOTS_POOLS_MAP, EXTERNAL_SIGNAL_PROVIDERS_MAP, STRATEGY_TYPES, TRADING_VIEW_BOT_PERFORMANCE_ENDPOINT_BASE } from "../constants/bonfidaBots"
+import { BONFIDA_API_URL_BASE, BONFIDA_OFFICIAL_AND_COMPETITION_POOLS, BONFIDA_OFFICIAL_POOLS_MAP, BOT_STRATEGY_BASE_URL, COMPETITION_BOTS_POOLS_MAP, EXTERNAL_SIGNAL_PROVIDERS_MAP, STRATEGY_TYPES, TRADING_VIEW_BOT_PERFORMANCE_ENDPOINT_BASE } from "../constants/bonfidaBots"
 import { fetchPoolBalances, fetchPoolInfo, PoolAssetBalance, PoolInfo } from "@bonfida/bot";
 import { abbreviateAddress, apiGet, formatAmount } from "../utils/utils";
 import { MARKETS, TOKEN_MINTS } from "@project-serum/serum";
 import { Connection, PublicKey, TokenAmount } from "@solana/web3.js";
-import { PoolMarketData } from "../types/automatedStrategies";
+import { PoolMarketData } from "../components/AutomatedStrategies";
+
 
 type BotPerfomance = {
   time: number;
@@ -19,6 +20,23 @@ export const getTradingviewBotPerformance = async (poolSeed: string): Promise<Tr
   const url = `${TRADING_VIEW_BOT_PERFORMANCE_ENDPOINT_BASE}${poolSeed}`
   const response = await apiGet(url);
   return response
+}
+
+export const getInceptionPerformance = async (poolSeed: string, tokenPrice: number): Promise<(number | null)> => {
+  let initialPoolTokenUsdValue =
+    BONFIDA_OFFICIAL_AND_COMPETITION_POOLS[poolSeed]?.initialPoolTokenUsdValue || null;
+  if (initialPoolTokenUsdValue == null) {
+    //try to get performance data from tradingview
+    const { performance } = await getTradingviewBotPerformance(poolSeed);
+    if (performance.length) {
+      initialPoolTokenUsdValue = performance[0].poolTokenUsdValue;
+    }
+  }
+  const performanceValue =
+    initialPoolTokenUsdValue !== null
+      ? 100 * (tokenPrice / initialPoolTokenUsdValue - 1)
+      : initialPoolTokenUsdValue;
+  return performanceValue;
 }
 
 export const getBonfidaPoolMarketData = ( tokenMintMapBySympol: Map<string, string>, poolInfo:PoolInfo ): PoolMarketData => {

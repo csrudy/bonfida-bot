@@ -397,3 +397,9 @@ export const COMPETITION_BOTS_POOLS_MAP: Pool = {
     initialPoolTokenUsdValue: 99,
   },
 };
+
+export const BONFIDA_OFFICIAL_AND_COMPETITION_POOLS = Object.assign(
+  {},
+  BONFIDA_OFFICIAL_POOLS_MAP,
+  COMPETITION_BOTS_POOLS_MAP
+);

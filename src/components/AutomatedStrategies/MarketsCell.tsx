@@ -1,7 +1,7 @@
 import React, { FC } from "react";
 import { PoolIcon } from "../TokenIcon";
 import { Tooltip } from "antd";
-import { PoolMarketData } from "../../types/automatedStrategies";
+import { PoolMarketData } from ".";
 
 export const MarketsCell: FC<PoolMarketData> = ({
   name,
