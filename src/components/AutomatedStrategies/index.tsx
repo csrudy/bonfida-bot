@@ -10,7 +10,6 @@ import { useConnection, useConnectionConfig } from "../../contexts/connection";
 import {
   getPoolsSeedsBySigProvider,
   getPoolTokenMintFromSeed,
-  PoolAssetBalance,
 } from "@bonfida/bot";
 
 import { formatUSD, getUserParsedAccounts } from "../../utils/utils";
@@ -58,14 +57,14 @@ interface PoolTableRow {
   name: PoolNameData;
   tokenPrice: number;
   balance: number | null;
-  inceptionPerformance: {
-    poolSeed: string;
-    tokenAmount: TokenAmount;
-    poolAssetBalance: PoolAssetBalance[];
-  };
+  inceptionPerformance: PoolInceptionPerformanceData;
   positionValue: PositionValue;
 }
 
+export interface PoolInceptionPerformanceData {
+  poolSeed: string;
+  tokenPrice: number;
+}
 const getBonfidaPools = async (
   connection: Connection,
   walletPublicKey: PublicKey,
@@ -148,8 +147,7 @@ const getBonfidaPools = async (
       tokenPrice,
       inceptionPerformance: {
         poolSeed,
-        tokenAmount,
-        poolAssetBalance,
+        tokenPrice,
       },
       positionValue,
     };

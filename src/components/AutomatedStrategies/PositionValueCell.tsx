@@ -7,13 +7,13 @@ export const PositionValueCell: FC<PositionValue> = ({
   totalValue,
   assetBalances,
 }) => {
-  const labels = Object.entries(assetBalances).map<JSX.Element>(
-    ([token, amount]) => (
+  const labels = Object.entries(assetBalances)
+    .sort((a, b) => Number(b[1].value) - Number(a[1].value))
+    .map<JSX.Element>(([token, amount]) => (
       <div>
         {token}: {amount.value}
       </div>
-    )
-  );
+    ));
 
   return (
     <div
