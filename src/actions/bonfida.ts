@@ -97,7 +97,7 @@ export type PoolData = {
   poolInfo: PoolInfo;
   tokenAmount: TokenAmount;
   poolAssetBalance: PoolAssetBalance[]
-  assetMints: string[]
+  assetMints: PublicKey[]
 }
 export interface PoolDataBySeed {
   [poolSeed: string]: PoolData
@@ -110,13 +110,13 @@ export const createPoolDataBySeedMap = async (connection: Connection, seeds: Buf
       connection,
       seed
     );
-    const assetMints = poolAssetBalance.map<string>(assetBalance=> assetBalance.mint)
     const poolSeed = new PublicKey(seed).toBase58()
     poolInfoBySeed[poolSeed] = {
+      assetMints: poolInfo.assetMintkeys,
       poolInfo,
       tokenAmount,
       poolAssetBalance,
-      assetMints
+      
     }
   }
   return poolInfoBySeed
@@ -125,11 +125,11 @@ export const createPoolDataBySeedMap = async (connection: Connection, seeds: Buf
 export type TokenPriceMap = {
   [symbol: string]: number
 }
-export const createTokenPriceMap = async (mints: Set<string>): Promise<TokenPriceMap> => {
+export const createTokenPriceMap = async (mints: Set<PublicKey>): Promise<TokenPriceMap> => {
   const priceMap: TokenPriceMap  = {}
   for (const mint of mints) {
-    const tokenPrice = await getTokenPrice(mint)
-    priceMap[mint] = tokenPrice
+    const tokenPrice = await getTokenPrice(mint.toBase58())
+    priceMap[mint.toBase58()] = tokenPrice
   }
   return priceMap
 }
