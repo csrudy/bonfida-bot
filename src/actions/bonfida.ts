@@ -1,9 +1,10 @@
 import { BONFIDA_API_URL_BASE, BONFIDA_OFFICIAL_AND_COMPETITION_POOLS, BONFIDA_OFFICIAL_POOLS_MAP, BOT_STRATEGY_BASE_URL, COMPETITION_BOTS_POOLS_MAP, EXTERNAL_SIGNAL_PROVIDERS_MAP, STRATEGY_TYPES, TRADING_VIEW_BOT_PERFORMANCE_ENDPOINT_BASE } from "../constants/bonfidaBots"
 import { fetchPoolBalances, fetchPoolInfo, PoolAssetBalance, PoolInfo } from "@bonfida/bot";
-import { abbreviateAddress, apiGet, formatAmount } from "../utils/utils";
+import { abbreviateAddress, apiGet, formatAmount, getTokenByName, getTokenName } from "../utils/utils";
 import { MARKETS, TOKEN_MINTS } from "@project-serum/serum";
 import { Connection, PublicKey, TokenAmount } from "@solana/web3.js";
 import { PoolMarketData } from "../components/AutomatedStrategies";
+import { TokenInfoMap } from "@solana/spl-token-registry";
 
 
 type BotPerfomance = {
@@ -39,7 +40,7 @@ export const getInceptionPerformance = async (poolSeed: string, tokenPrice: numb
   return performanceValue;
 }
 
-export const getBonfidaPoolMarketData = ( tokenMintMapBySympol: Map<string, string>, poolInfo:PoolInfo ): PoolMarketData => {
+export const getBonfidaPoolMarketData = (tokenMap: TokenInfoMap, poolInfo:PoolInfo): PoolMarketData => {
   const { authorizedMarkets } = poolInfo;
 
   const markets = authorizedMarkets.map<string>((marketAddress) => {
@@ -49,8 +50,8 @@ export const getBonfidaPoolMarketData = ( tokenMintMapBySympol: Map<string, stri
   })
   const displayMarket = markets[0];
   const marketSymbols = displayMarket.split("/");
-  const mintA = tokenMintMapBySympol.get(marketSymbols[0]);
-  const mintB = tokenMintMapBySympol.get(marketSymbols[1]);
+  const mintA = getTokenByName(tokenMap, marketSymbols[0])?.address
+  const mintB = getTokenByName(tokenMap, marketSymbols[1])?.address
   const otherMarkets = markets.length > 1 ? markets.slice(1) : [];
 
   const poolMarketData = {
@@ -97,13 +98,12 @@ export type PoolData = {
   poolInfo: PoolInfo;
   tokenAmount: TokenAmount;
   poolAssetBalance: PoolAssetBalance[]
-  assetMints: PublicKey[]
 }
 export interface PoolDataBySeed {
   [poolSeed: string]: PoolData
 }
 export const createPoolDataBySeedMap = async (connection: Connection, seeds: Buffer[]): Promise<PoolDataBySeed> => {
-  const poolInfoBySeed: PoolDataBySeed = {}
+  const poolDataBySeed: PoolDataBySeed = {}
   for (const seed of seeds) {
     const poolInfo = await fetchPoolInfo(connection, seed);
     const [tokenAmount, poolAssetBalance] = await fetchPoolBalances(
@@ -111,15 +111,14 @@ export const createPoolDataBySeedMap = async (connection: Connection, seeds: Buf
       seed
     );
     const poolSeed = new PublicKey(seed).toBase58()
-    poolInfoBySeed[poolSeed] = {
-      assetMints: poolInfo.assetMintkeys,
+    poolDataBySeed[poolSeed] = {
       poolInfo,
       tokenAmount,
       poolAssetBalance,
       
     }
   }
-  return poolInfoBySeed
+  return poolDataBySeed
 }
 
 export type TokenPriceMap = {
@@ -158,23 +157,25 @@ export interface PositionValue {
   totalValue: number;
   assetBalances: AssetBalances
 }
-export const getBonfidaPoolPositionValue = (tokenPice: number, tokenBalance: number | null, poolTokenAmount: TokenAmount, poolAssetBalance: PoolAssetBalance[], tokenMintMapBySymbol: Map<string, string>): PositionValue=> {
-  const tokenSymbolbyMintMap: {[mint:string]: string} = {}
-  for (const [symbol, mint] of tokenMintMapBySymbol.entries()) {
-    tokenSymbolbyMintMap[mint] = symbol
-  }
-  
+export const getBonfidaPoolPositionValue = (
+  tokenMap: TokenInfoMap,
+  tokenPice: number,
+  tokenBalance: number | null,
+  poolTokenAmount: TokenAmount,
+  poolAssetBalance: PoolAssetBalance[]
+  ): PositionValue=> {  
   const positionRatio = tokenBalance == null ||poolTokenAmount.uiAmount == null ? 0 : tokenBalance / poolTokenAmount.uiAmount;
   const assetBalances = poolAssetBalance.reduce<AssetBalances>(
     (acc, asset) => {
       const { tokenAmount } = asset;
       if (tokenAmount && tokenAmount.uiAmount) {
         const userAssetAmount = tokenAmount.uiAmount * positionRatio;
-        const tokenSymbol = tokenSymbolbyMintMap[asset.mint];
-        ;
-        acc[tokenSymbol] = {
-          symbol: tokenSymbol,
-          value: formatAmount(userAssetAmount, tokenAmount.decimals, false),
+        const tokenSymbol = getTokenName(tokenMap, asset.mint);
+        if (tokenSymbol) {
+          acc[tokenSymbol] = {
+            symbol: tokenSymbol,
+            value: formatAmount(userAssetAmount, tokenAmount.decimals, false),
+          }
         }
       }
       return acc;

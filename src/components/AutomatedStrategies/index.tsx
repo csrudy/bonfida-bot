@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Connection,
   ParsedAccountData,
@@ -33,6 +33,7 @@ import {
 } from "../../actions/bonfida";
 import { Collapse, Table } from "antd";
 import { CalculatorFilled } from "@ant-design/icons";
+import { TokenInfoMap } from "@solana/spl-token-registry";
 const { Panel } = Collapse;
 
 export enum PLATFORMS_ENUM {
@@ -79,7 +80,7 @@ interface PoolTableRow {
 const getBonfidaPools = async (
   connection: Connection,
   walletPublicKey: PublicKey,
-  tokenMintMapBySymbol: Map<string, string>
+  tokenMap: TokenInfoMap
 ): Promise<PoolTableRow[]> => {
   const userTokenAccounts = await getUserParsedAccounts(
     connection,
@@ -122,7 +123,7 @@ const getBonfidaPools = async (
   const poolInfoMap = await createPoolDataBySeedMap(connection, userPoolSeeds);
   const allPoolAssetMints = new Set(
     Object.values(poolInfoMap)
-      .map((o) => o.assetMints)
+      .map((o) => o.poolInfo.assetMintkeys)
       .flat()
   );
   // avoid making multiple api calls for same tokens
@@ -133,7 +134,7 @@ const getBonfidaPools = async (
     const poolData = poolInfoMap[seedKey];
     const { poolInfo, tokenAmount, poolAssetBalance } = poolData;
     const { mintKey } = poolInfo;
-    const markets = getBonfidaPoolMarketData(tokenMintMapBySymbol, poolInfo);
+    const markets = getBonfidaPoolMarketData(tokenMap, poolInfo);
     const name = getBonfidaPoolNameData(poolInfo);
     const poolSeed = new PublicKey(seed).toBase58();
     const tokenPrice = getBonfidaPoolTokenPrice(
@@ -147,11 +148,11 @@ const getBonfidaPools = async (
     );
     const balance = userPoolBalanceMap[mintKey.toBase58()].value.uiAmount;
     const positionValue = getBonfidaPoolPositionValue(
+      tokenMap,
       tokenPrice,
       balance,
       tokenAmount,
-      poolAssetBalance,
-      tokenMintMapBySymbol
+      poolAssetBalance
     );
     const poolRowData = {
       markets,
@@ -172,28 +173,23 @@ export const AutomatedStrategies = () => {
   const wallet = useWallet();
   const { publicKey } = wallet;
   const { tokenMap } = useConnectionConfig();
-  const tokenMintMapBySymbol = useRef(new Map<string, string>());
-  tokenMap.forEach((tokenInfo, mint) => {
-    tokenMintMapBySymbol.current.set(tokenInfo.symbol, mint);
-  });
   const connection = useConnection();
   const [poolTableData, setPoolTableData] = useState<PoolTableRow[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
+
   useEffect(() => {
     if (publicKey) {
       setLoading(true);
-      getBonfidaPools(connection, publicKey, tokenMintMapBySymbol.current).then(
-        (data) => {
-          setPoolTableData(
-            data.sort(
-              (a, b) => b.positionValue.totalValue - a.positionValue.totalValue
-            )
-          );
-          setLoading(false);
-        }
-      );
+      getBonfidaPools(connection, publicKey, tokenMap).then((data) => {
+        setPoolTableData(
+          data.sort(
+            (a, b) => b.positionValue.totalValue - a.positionValue.totalValue
+          )
+        );
+        setLoading(false);
+      });
     }
-  }, [connection, publicKey]);
+  }, [connection, publicKey, tokenMap]);
 
   const totalAutomatedStrategyValue = poolTableData.reduce<number>(
     (acc, val) => (acc += val.positionValue.totalValue),
