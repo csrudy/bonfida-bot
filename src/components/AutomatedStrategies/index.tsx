@@ -13,6 +13,16 @@ import { getBonfidaPools, PoolTableRow } from "../../actions/bonfida";
 import { useConnection, useConnectionConfig } from "../../contexts/connection";
 const { Panel } = Collapse;
 
+export enum PLATFORMS_ENUM {
+  BONFIDA = "bonfida",
+}
+export const PLATFORM_META = {
+  bonfida: {
+    label: "Bonfida",
+    tokenMint: "EchesyfXePKdLtoiZSL8pBe8Myagyy8ZRqsACNCFGnvp",
+  },
+};
+
 export const AutomatedStrategies = () => {
   const wallet = useWallet();
   const { publicKey } = wallet;
@@ -20,16 +30,11 @@ export const AutomatedStrategies = () => {
   const connection = useConnection();
   const [poolTableData, setPoolTableData] = useState<PoolTableRow[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
-
   useEffect(() => {
     if (publicKey) {
       setLoading(true);
       getBonfidaPools(connection, publicKey, tokenMap).then((data) => {
-        setPoolTableData(
-          data.sort(
-            (a, b) => b.positionValue.totalValue - a.positionValue.totalValue
-          )
-        );
+        setPoolTableData(data);
         setLoading(false);
       });
     }

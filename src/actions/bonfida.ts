@@ -1,21 +1,12 @@
-import { BONFIDA_API_URL_BASE, BONFIDA_OFFICIAL_AND_COMPETITION_POOLS, BONFIDA_OFFICIAL_POOLS_MAP, BOT_STRATEGY_BASE_URL, COMPETITION_BOTS_POOLS_MAP, EXTERNAL_SIGNAL_PROVIDERS_MAP, STRATEGY_TYPES, TRADING_VIEW_BOT_PERFORMANCE_ENDPOINT_BASE } from "../constants/bonfidaBots"
+import { BONFIDA_OFFICIAL_AND_COMPETITION_POOLS, BONFIDA_OFFICIAL_POOLS_MAP, BOT_STRATEGY_BASE_URL, COMPETITION_BOTS_POOLS_MAP, EXTERNAL_SIGNAL_PROVIDERS_MAP, STRATEGY_TYPES, TRADING_VIEW_BOT_PERFORMANCE_ENDPOINT_BASE } from "../constants/bonfidaBots"
 import { fetchPoolBalances, fetchPoolInfo, getPoolsSeedsBySigProvider, getPoolTokenMintFromSeed, PoolAssetBalance, PoolInfo } from "@bonfida/bot";
-import { abbreviateAddress, apiGet, formatAmount, getTokenByName, getTokenName, getUserParsedAccounts } from "../utils/utils";
-import { MARKETS, TOKEN_MINTS } from "@project-serum/serum";
+import { abbreviateAddress, apiGet, formatAmount, getTokenByName, getTokenName, getTokenPrice, getUserParsedAccounts } from "../utils/utils";
+import { MARKETS } from "@project-serum/serum";
 import { Connection, ParsedAccountData, PublicKey, RpcResponseAndContext, TokenAmount } from "@solana/web3.js";
 import { TokenInfoMap } from "@solana/spl-token-registry";
-export enum PLATFORMS_ENUM {
-  BONFIDA = "bonfida",
-}
+import { PLATFORMS_ENUM, PLATFORM_META } from "../components/AutomatedStrategies";
 
-const PLATFORM_META = {
-  bonfida: {
-    label: "Bonfida",
-    tokenMint: "EchesyfXePKdLtoiZSL8pBe8Myagyy8ZRqsACNCFGnvp",
-  },
-};
-
-type PlatformMetaData = {
+export interface PlatformData {
   label: string;
   tokenMint: string;
 };
@@ -30,20 +21,35 @@ export interface PoolNameData {
   poolUrl: string;
   address: PublicKey;
 }
-
 export type InceptionPerformance = number | null;
 export type Balance = number | null;
 export type TokenPrice = number;
-
+export interface PositionValueData {
+  totalValue: number;
+  assetBalances: AssetBalances
+}
 export interface PoolTableRow {
-  platform: PlatformMetaData;
+  platform: PlatformData;
   markets: PoolMarketData;
   name: PoolNameData;
   tokenPrice: TokenPrice;
   balance: Balance;
   inceptionPerformance: InceptionPerformance;
-  positionValue: PositionValue;
+  positionValue: PositionValueData;
 }
+interface AssetBalances {
+  [tokenSymbol: string]: {
+    symbol: string,
+    value: string
+  }
+}
+interface TokenAccountPubkeytMapByMint {
+  [mint: string]: PublicKey;
+};
+interface UserPoolBalanceMap {
+  [poolSeed: string]: RpcResponseAndContext<TokenAmount>;
+};
+
 export const getBonfidaPools = async (
   connection: Connection,
   walletPublicKey: PublicKey,
@@ -53,11 +59,6 @@ export const getBonfidaPools = async (
     connection,
     walletPublicKey
   );
-
-  type TokenAccountPubkeytMapByMint = {
-    [mint: string]: PublicKey;
-  };
-
   const tokenAccountPubkeytMapByMint = userTokenAccounts.reduce<
     TokenAccountPubkeytMapByMint
   >((tokenAccountMapByMint, userTokenAccount) => {
@@ -66,9 +67,7 @@ export const getBonfidaPools = async (
     tokenAccountMapByMint[mint] = userTokenAccount.pubkey;
     return tokenAccountMapByMint;
   }, {});
-  type UserPoolBalanceMap = {
-    [poolSeed: string]: RpcResponseAndContext<TokenAmount>;
-  };
+
   const bonfidaPoolSeeds = await getPoolsSeedsBySigProvider(connection);
   const userPoolSeeds: Buffer[] = [];
   const userPoolMints: string[] = [];
@@ -97,13 +96,12 @@ export const getBonfidaPools = async (
   const tokenPriceMap = await createTokenPriceMap(allPoolAssetMints);
 
   for (const seed of userPoolSeeds) {
-    const seedKey = new PublicKey(seed).toBase58();
-    const poolData = poolInfoMap[seedKey];
+    const poolSeed = new PublicKey(seed).toBase58();
+    const poolData = poolInfoMap[poolSeed];
     const { poolInfo, tokenAmount, poolAssetBalance } = poolData;
     const { mintKey } = poolInfo;
-    const markets = getBonfidaPoolMarketData(tokenMap, poolInfo);
-    const name = getBonfidaPoolNameData(poolInfo);
-    const poolSeed = new PublicKey(seed).toBase58();
+    const marketsData = getBonfidaPoolMarketData(tokenMap, poolInfo);
+    const nameData = getBonfidaPoolNameData(poolInfo);
     const tokenPrice = getBonfidaPoolTokenPrice(
       tokenPriceMap,
       tokenAmount,
@@ -122,19 +120,20 @@ export const getBonfidaPools = async (
       poolAssetBalance
     );
     const poolRowData = {
-      markets,
-      name,
-      platform: PLATFORM_META[PLATFORMS_ENUM.BONFIDA],
       balance,
       tokenPrice,
       inceptionPerformance,
       positionValue,
+      platform: PLATFORM_META[PLATFORMS_ENUM.BONFIDA],
+      markets: marketsData,
+      name: nameData,
     };
     poolTableRows.push(poolRowData);
   }
-
-  return poolTableRows;
+  const sortByPositionValue = (a: PoolTableRow, b: PoolTableRow) =>  b.positionValue.totalValue - a.positionValue.totalValue;
+  return poolTableRows.sort(sortByPositionValue)
 };
+
 type BotPerfomance = {
   time: number;
   poolSeed: string,
@@ -143,7 +142,6 @@ type BotPerfomance = {
 export type TradingBotPerformanceResponse = {
   performance: BotPerfomance[]
 }
-
 
 export const getTradingviewBotPerformance = async (poolSeed: string): Promise<TradingBotPerformanceResponse> => {
   const url = `${TRADING_VIEW_BOT_PERFORMANCE_ENDPOINT_BASE}${poolSeed}`
@@ -192,7 +190,7 @@ export const getBonfidaPoolMarketData = (tokenMap: TokenInfoMap, poolInfo:PoolIn
   return poolMarketData;
 }
 
-const getBotName = (poolInfo: PoolInfo): string => {
+const getPoolName = (poolInfo: PoolInfo): string => {
   const { seed, signalProvider } = poolInfo;
   const poolSeedString = new PublicKey(seed).toBase58();
   if (BONFIDA_OFFICIAL_POOLS_MAP.hasOwnProperty(poolSeedString)) {
@@ -210,10 +208,10 @@ const getBotName = (poolInfo: PoolInfo): string => {
   return STRATEGY_TYPES.CUSTOM;
 };
 
-export const getBonfidaPoolNameData = (poolInfo: PoolInfo) => {
+export const getBonfidaPoolNameData = (poolInfo: PoolInfo): PoolNameData => {
   const { seed, address } = poolInfo;
   const poolSeed = new PublicKey(seed).toBase58();
-  const name = getBotName(poolInfo)
+  const name = getPoolName(poolInfo)
   const poolUrl = BOT_STRATEGY_BASE_URL + poolSeed;
   const poolNameData = {
     name,
@@ -275,23 +273,14 @@ export const getBonfidaPoolTokenPrice = (tokenPriceMap: TokenPriceMap, tokenAmou
   return tokenPrice;
 }
 
-type AssetBalances = {
-  [tokenSymbol: string]: {
-    symbol: string,
-    value: string
-  }
-}
-export interface PositionValue {
-  totalValue: number;
-  assetBalances: AssetBalances
-}
+
 export const getBonfidaPoolPositionValue = (
   tokenMap: TokenInfoMap,
   tokenPice: number,
   tokenBalance: number | null,
   poolTokenAmount: TokenAmount,
   poolAssetBalance: PoolAssetBalance[]
-  ): PositionValue=> {  
+  ): PositionValueData => {  
   const positionRatio = tokenBalance == null ||poolTokenAmount.uiAmount == null ? 0 : tokenBalance / poolTokenAmount.uiAmount;
   const assetBalances = poolAssetBalance.reduce<AssetBalances>(
     (acc, asset) => {
@@ -311,35 +300,6 @@ export const getBonfidaPoolPositionValue = (
   const totalValue = tokenBalance !== null ? tokenPice * tokenBalance : 0;
   return {totalValue, assetBalances}
 }
-
-export const getTokenPrice = async (mintAddress: string): Promise<number> => {
-  const token = TOKEN_MINTS.find((a) => a.address.toBase58() === mintAddress);
-
-  if (!token) {
-    throw new Error('Token does not exist');
-  }
-
-  if (['USDC', 'USDT'].includes(token?.name || '')) {
-    return 1.0;
-  }
-
-  try {
-    const result = await apiGet(
-      `${BONFIDA_API_URL_BASE}orderbooks/${token.name}USDC`,
-    );
-    if (!result.success) {
-      throw new Error('Error getting price');
-    }
-    const { bids, asks } = result.data;
-    if (!bids || !asks) {
-      throw new Error('Error getting price');
-    }
-    return (bids[0].price + asks[0].price) / 2;
-  } catch (err) {
-    console.log(`Error getting midPrice err`);
-    throw new Error('Error getting price');
-  }
-};
 
 export const getUserPoolTokenBalance = async (connection: Connection, publicKey: PublicKey) => {
   const balance = await connection.getTokenAccountBalance(publicKey,"recent")

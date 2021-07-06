@@ -1,11 +1,8 @@
 import React, { FC } from "react";
+import { PlatformData } from "../../actions/bonfida";
 import { TokenIcon } from "../TokenIcon";
 
-interface PlatformCellProps {
-  label: string;
-  tokenMint: string;
-}
-export const PlatformCell: FC<PlatformCellProps> = ({ label, tokenMint }) => {
+export const PlatformCell: FC<PlatformData> = ({ label, tokenMint }) => {
   return (
     <div style={{ display: "inline-flex" }}>
       <TokenIcon mintAddress={tokenMint} />
