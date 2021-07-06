@@ -1,6 +1,6 @@
 import { Tag } from "antd";
 import React, { FC } from "react";
-import { InceptionPerformance } from ".";
+import { InceptionPerformance } from "../../actions/bonfida";
 
 interface InceptionPerfomanceProps {
   inceptionPerformance: InceptionPerformance;

@@ -1,9 +1,9 @@
 import { Tooltip } from "antd";
 import React, { FC } from "react";
-import { PositionValue } from "../../actions/bonfida";
+import { PositionValueData } from "../../actions/bonfida";
 import { formatUSD } from "../../utils/utils";
 
-export const PositionValueCell: FC<PositionValue> = ({
+export const PositionValueCell: FC<PositionValueData> = ({
   totalValue,
   assetBalances,
 }) => {

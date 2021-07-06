@@ -6,7 +6,8 @@ import { Connection, GetProgramAccountsConfig, PublicKey } from "@solana/web3.js
 import BN from "bn.js";
 import { WAD, ZERO } from "../constants";
 import { TokenInfo } from "@solana/spl-token-registry";
-import { MARKETS } from "@project-serum/serum";
+import { MARKETS, TOKEN_MINTS } from "@project-serum/serum";
+import { BONFIDA_API_URL_BASE } from "../constants/bonfidaBots";
 
 export type KnownTokenMap = Map<string, TokenInfo>;
 
@@ -302,3 +303,32 @@ export async function apiGet(path: string) {
     return [];
   }
 }
+
+export const getTokenPrice = async (mintAddress: string): Promise<number> => {
+  const token = TOKEN_MINTS.find((a) => a.address.toBase58() === mintAddress);
+
+  if (!token) {
+    throw new Error('Token does not exist');
+  }
+
+  if (['USDC', 'USDT'].includes(token?.name || '')) {
+    return 1.0;
+  }
+
+  try {
+    const result = await apiGet(
+      `${BONFIDA_API_URL_BASE}orderbooks/${token.name}USDC`,
+    );
+    if (!result.success) {
+      throw new Error('Error getting price');
+    }
+    const { bids, asks } = result.data;
+    if (!bids || !asks) {
+      throw new Error('Error getting price');
+    }
+    return (bids[0].price + asks[0].price) / 2;
+  } catch (err) {
+    console.log(`Error getting midPrice err`);
+    throw new Error('Error getting price');
+  }
+};
