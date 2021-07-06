@@ -1,18 +1,5 @@
 import React, { useEffect, useState } from "react";
-import {
-  Connection,
-  ParsedAccountData,
-  PublicKey,
-  RpcResponseAndContext,
-  TokenAmount,
-} from "@solana/web3.js";
-import { useConnection, useConnectionConfig } from "../../contexts/connection";
-import {
-  getPoolsSeedsBySigProvider,
-  getPoolTokenMintFromSeed,
-} from "@bonfida/bot";
-
-import { formatUSD, getUserParsedAccounts } from "../../utils/utils";
+import { formatUSD } from "../../utils/utils";
 import { useWallet } from "../../contexts/wallet";
 import { TokenPrice } from "./TokenPriceCell";
 import { InceptionPerformanceCell } from "./InceptionPerformanceCell";
@@ -20,154 +7,11 @@ import { PositionValueCell } from "./PositionValueCell";
 import { MarketsCell } from "./MarketsCell";
 import { PlatformCell } from "./PlatformCell";
 import { BotNameCell } from "./BotNameCell";
-import {
-  getBonfidaPoolNameData,
-  getBonfidaPoolMarketData,
-  getBonfidaPoolTokenPrice,
-  createTokenPriceMap,
-  createPoolDataBySeedMap,
-  getUserPoolTokenBalance,
-  getBonfidaPoolPositionValue,
-  PositionValue,
-  getInceptionPerformance,
-} from "../../actions/bonfida";
 import { Collapse, Table } from "antd";
 import { CalculatorFilled } from "@ant-design/icons";
-import { TokenInfoMap } from "@solana/spl-token-registry";
+import { getBonfidaPools, PoolTableRow } from "../../actions/bonfida";
+import { useConnection, useConnectionConfig } from "../../contexts/connection";
 const { Panel } = Collapse;
-
-export enum PLATFORMS_ENUM {
-  BONFIDA = "bonfida",
-}
-
-const PLATFORM_META = {
-  bonfida: {
-    label: "Bonfida",
-    tokenMint: "EchesyfXePKdLtoiZSL8pBe8Myagyy8ZRqsACNCFGnvp",
-  },
-};
-
-type PlatformMetaData = {
-  label: string;
-  tokenMint: string;
-};
-export interface PoolMarketData {
-  mintA: string | undefined;
-  mintB: string | undefined;
-  name: string;
-  otherMarkets: string[];
-}
-export interface PoolNameData {
-  name: string;
-  poolUrl: string;
-  address: PublicKey;
-}
-
-export type InceptionPerformance = number | null;
-export type Balance = number | null;
-export type TokenPrice = number;
-
-interface PoolTableRow {
-  platform: PlatformMetaData;
-  markets: PoolMarketData;
-  name: PoolNameData;
-  tokenPrice: TokenPrice;
-  balance: Balance;
-  inceptionPerformance: InceptionPerformance;
-  positionValue: PositionValue;
-}
-
-const getBonfidaPools = async (
-  connection: Connection,
-  walletPublicKey: PublicKey,
-  tokenMap: TokenInfoMap
-): Promise<PoolTableRow[]> => {
-  const userTokenAccounts = await getUserParsedAccounts(
-    connection,
-    walletPublicKey
-  );
-
-  type TokenAccountPubkeytMapByMint = {
-    [mint: string]: PublicKey;
-  };
-
-  const tokenAccountPubkeytMapByMint = userTokenAccounts.reduce<
-    TokenAccountPubkeytMapByMint
-  >((tokenAccountMapByMint, userTokenAccount) => {
-    const mint = (userTokenAccount.account.data as ParsedAccountData).parsed
-      .info.mint;
-    tokenAccountMapByMint[mint] = userTokenAccount.pubkey;
-    return tokenAccountMapByMint;
-  }, {});
-  type UserPoolBalanceMap = {
-    [poolSeed: string]: RpcResponseAndContext<TokenAmount>;
-  };
-  const bonfidaPoolSeeds = await getPoolsSeedsBySigProvider(connection);
-  const userPoolSeeds: Buffer[] = [];
-  const userPoolMints: string[] = [];
-  const userPoolBalanceMap: UserPoolBalanceMap = {};
-
-  for (const seed of bonfidaPoolSeeds) {
-    // some pools are in bad states and cannot be fetched
-    const mint = await getPoolTokenMintFromSeed(seed).catch(() => {});
-    if (mint && tokenAccountPubkeytMapByMint[mint.toBase58()]) {
-      userPoolSeeds.push(seed);
-      userPoolBalanceMap[mint.toBase58()] = await getUserPoolTokenBalance(
-        connection,
-        tokenAccountPubkeytMapByMint[mint.toBase58()]
-      );
-      userPoolMints.push(mint.toBase58());
-    }
-  }
-  const poolTableRows = [];
-  const poolInfoMap = await createPoolDataBySeedMap(connection, userPoolSeeds);
-  const allPoolAssetMints = new Set(
-    Object.values(poolInfoMap)
-      .map((o) => o.poolInfo.assetMintkeys)
-      .flat()
-  );
-  // avoid making multiple api calls for same tokens
-  const tokenPriceMap = await createTokenPriceMap(allPoolAssetMints);
-
-  for (const seed of userPoolSeeds) {
-    const seedKey = new PublicKey(seed).toBase58();
-    const poolData = poolInfoMap[seedKey];
-    const { poolInfo, tokenAmount, poolAssetBalance } = poolData;
-    const { mintKey } = poolInfo;
-    const markets = getBonfidaPoolMarketData(tokenMap, poolInfo);
-    const name = getBonfidaPoolNameData(poolInfo);
-    const poolSeed = new PublicKey(seed).toBase58();
-    const tokenPrice = getBonfidaPoolTokenPrice(
-      tokenPriceMap,
-      tokenAmount,
-      poolAssetBalance
-    );
-    const inceptionPerformance = await getInceptionPerformance(
-      poolSeed,
-      tokenPrice
-    );
-    const balance = userPoolBalanceMap[mintKey.toBase58()].value.uiAmount;
-    const positionValue = getBonfidaPoolPositionValue(
-      tokenMap,
-      tokenPrice,
-      balance,
-      tokenAmount,
-      poolAssetBalance
-    );
-    const poolRowData = {
-      markets,
-      name,
-      platform: PLATFORM_META[PLATFORMS_ENUM.BONFIDA],
-      balance,
-      tokenPrice,
-      inceptionPerformance,
-      positionValue,
-    };
-    poolTableRows.push(poolRowData);
-  }
-
-  return poolTableRows;
-};
 
 export const AutomatedStrategies = () => {
   const wallet = useWallet();
