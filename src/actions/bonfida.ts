@@ -156,13 +156,14 @@ export const getTradingviewBotPerformance = async (poolSeed: string): Promise<Tr
 export const getInceptionPerformance = async (poolSeed: string, tokenPrice: number): Promise<(number | null)> => {
   let initialPoolTokenUsdValue =
     BONFIDA_OFFICIAL_AND_COMPETITION_POOLS[poolSeed]?.initialPoolTokenUsdValue || null;
-  if (initialPoolTokenUsdValue == null) {
-    //try to get performance data from tradingview
-    const { performance } = await getTradingviewBotPerformance(poolSeed);
-    if (performance.length) {
-      initialPoolTokenUsdValue = performance[0].poolTokenUsdValue;
-    }
-  }
+  // TODO: Investigate cors issue with TRADING_VIEW_BOT_PERFORMANCE_ENDPOINT_BASE, could be blocked from non-bonfida origin
+  // if (initialPoolTokenUsdValue == null) {
+  //   //try to get performance data from tradingview
+  //   const { performance } = await getTradingviewBotPerformance(poolSeed);
+  //   if (performance.length) {
+  //     initialPoolTokenUsdValue = performance[0].poolTokenUsdValue;
+  //   }
+  // }
   const performanceValue =
     initialPoolTokenUsdValue !== null
       ? 100 * (tokenPrice / initialPoolTokenUsdValue - 1)
