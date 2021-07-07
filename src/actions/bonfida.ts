@@ -59,7 +59,7 @@ export const getBonfidaPools = async (
     connection,
     walletPublicKey
   );
-  const tokenAccountPubkeytMapByMint = userTokenAccounts.reduce<
+  const tokenAccountPubkeyMapByMint = userTokenAccounts.reduce<
     TokenAccountPubkeytMapByMint
   >((tokenAccountMapByMint, userTokenAccount) => {
     const mint = (userTokenAccount.account.data as ParsedAccountData).parsed
@@ -76,13 +76,17 @@ export const getBonfidaPools = async (
   for (const seed of bonfidaPoolSeeds) {
     // some pools are in bad states and cannot be fetched
     const mint = await getPoolTokenMintFromSeed(seed).catch(() => {});
-    if (mint && tokenAccountPubkeytMapByMint[mint.toBase58()]) {
-      userPoolSeeds.push(seed);
-      userPoolBalanceMap[mint.toBase58()] = await getUserPoolTokenBalance(
+    if (mint && tokenAccountPubkeyMapByMint[mint.toBase58()]) {
+      const userPoolTokenBalance = await getUserPoolTokenBalance(
         connection,
-        tokenAccountPubkeytMapByMint[mint.toBase58()]
+        tokenAccountPubkeyMapByMint[mint.toBase58()]
       );
-      userPoolMints.push(mint.toBase58());
+      if (userPoolTokenBalance.value.amount !== '0') {
+        userPoolBalanceMap[mint.toBase58()] = userPoolTokenBalance
+        userPoolMints.push(mint.toBase58());
+        userPoolSeeds.push(seed);
+      }
+
     }
   }
   const poolTableRows = [];
