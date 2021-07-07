@@ -204,40 +204,81 @@ em {
   }
 }
 
-.automated-strategies-table {
+.automated-strategies-table table {
+  color: #ffffff;
   padding: 0px;
   background: #141414;
+  border-spacing: 0 10px;
 }
-.ant-table-thead > tr > th {
+.automated-strategies-table .ant-table-thead > tr > th {
   background: none;
   border-bottom: none;
 }
-.ant-table-tbody > tr > td {
+.automated-strategies-table table > thead > tr:first-child th:last-child {
+  text-align: end;
+  padding-left: 0;
+  padding-right: 0;
+}
+.automated-strategies-table table > thead > tr:first-child th:first-child {
+  text-align: initial;
+  padding-left: 0;
+  padding-right: 0;
+}
+.automated-strategies-table .ant-table-tbody > tr > td {
   border-bottom: none;
 }
-.ant-table table {
-  border-spacing: 0 10px;
-}
-.ant-table-thead .ant-table-cell {
+
+.automated-strategies-table .ant-table-thead .ant-table-cell {
   color: #b2b2b2;
   border: none;
 }
-.ant-table-thead:first-child {
-  padding: 0;
-}
-.ant-table-thead:last-child {
-  padding: 0;
-}
-.automated-strategies-table .ant-table-row .pool-row {
+
+.automated-strategies-table .pool-row {
   border: none;
   border-radius: 2px;
   background: #202020;
-  margin: 5px;
 }
 .automated-stragtegies-wrapper {
   padding: 14px;
 }
-.ant-table-cell {
+.automated-strategies-table .ant-table-cell {
   border: none;
   background: #202020;
+  vertical-align: top;
+}
+
+.automated-strategies-header {
+  display: flex;
+  justify-content: space-between;
+  font-weight: bold;
+}
+
+.automated-strategies-header > h2 {
+  display: flex;
+  justify-content: space-between;
+  font-weight: bold;
+}
+
+.automated-strategies-container .ant-collapse-header {
+  padding-left: 0;
+  padding-right: 0;
+}
+
+.automated-strategies-container .ant-collapse > .ant-collapse-item {
+  border: none;
+}
+
+.automated-strategies-container .ant-collapse {
+  border: none;
+  background: #000000;
+}
+.automated-strategies-container
+  .ant-collapse
+  > .ant-collapse-item
+  > .ant-collapse-header {
+  padding-left: 0;
+  padding-right: 0;
+}
+.automated-strategies-container .ant-collapse-content {
+  border: none;
 }
