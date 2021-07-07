@@ -55,22 +55,22 @@ export const AutomatedStrategies = () => {
       ),
     },
     {
-      title: "Markets",
-      dataIndex: "markets",
-      key: "markets",
-      render: (markets: PoolTableRow["markets"]) => (
-        <>
-          <MarketsCell {...markets} />
-        </>
-      ),
-    },
-    {
       title: "Name",
       dataIndex: "name",
       key: "name",
       render: (nameProps: PoolTableRow["name"]) => (
         <>
           <BotNameCell {...nameProps} />
+        </>
+      ),
+    },
+    {
+      title: "Markets",
+      dataIndex: "markets",
+      key: "markets",
+      render: (markets: PoolTableRow["markets"]) => (
+        <>
+          <MarketsCell {...markets} />
         </>
       ),
     },

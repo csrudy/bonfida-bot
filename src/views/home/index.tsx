@@ -7,7 +7,7 @@ import { ConnectButton } from "../../components/ConnectButton";
 export const HomeView = () => {
   return (
     <Row gutter={[16, 16]} align="middle">
-      <Col span={24}>
+      <Col span={24} style={{ display: "flex", justifyContent: "center" }}>
         <AutomatedStrategies></AutomatedStrategies>
       </Col>
 

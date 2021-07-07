@@ -13,9 +13,8 @@ export const InceptionPerformanceCell: FC<InceptionPerfomanceProps> = ({
   if (inceptionPerformance !== null && inceptionPerformance > 0) {
     color = "#06D6A0";
     sign = "+";
-  } else if (inceptionPerformance !== null && inceptionPerformance > 0) {
+  } else if (inceptionPerformance !== null && inceptionPerformance < 0) {
     color = "#FF5A00";
-    sign = "-";
   }
 
   return (
