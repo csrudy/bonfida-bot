@@ -8,7 +8,6 @@ import { MarketsCell } from "./MarketsCell";
 import { PlatformCell } from "./PlatformCell";
 import { BotNameCell } from "./BotNameCell";
 import { Collapse, Table } from "antd";
-import { CalculatorFilled } from "@ant-design/icons";
 import { getBonfidaPools, PoolTableRow } from "../../actions/bonfida";
 import { useConnection, useConnectionConfig } from "../../contexts/connection";
 const { Panel } = Collapse;
@@ -103,7 +102,7 @@ export const AutomatedStrategies = () => {
       ),
     },
     {
-      title: "Value of Your Positiion (USD)",
+      title: "Value of Your Position (USD)",
       dataIndex: "positionValue",
       key: "positionValue",
       render: (positionValue: PoolTableRow["positionValue"]) => (
@@ -114,14 +113,10 @@ export const AutomatedStrategies = () => {
     },
   ];
   const header = (
-    <div style={{ display: "flex", justifyContent: "space-between" }}>
-      <span>
-        <CalculatorFilled />
-        <span style={{ fontSize: "18px", fontWeight: 800, marginLeft: "1rem" }}>
-          AUTOMATED STRATEGIES
-        </span>
-      </span>
-
+    <div className="automated-strategies-header">
+      <h2>
+        <strong>Automated Strategies</strong>
+      </h2>
       <h2>
         <strong>{formatUSD.format(totalAutomatedStrategyValue)}</strong>
       </h2>
@@ -129,17 +124,24 @@ export const AutomatedStrategies = () => {
   );
 
   return (
-    <>
+    <div className={"automated-strategies-container"}>
       <Collapse defaultActiveKey={1}>
-        <Panel showArrow={false} header={header} key="1">
+        <Panel
+          showArrow={false}
+          header={header}
+          className={"automated-stragtegies"}
+          key="1"
+        >
           <Table
             columns={columns}
             dataSource={poolTableData}
+            rowClassName={"pool-row"}
             pagination={false}
             loading={loading}
+            className={"automated-strategies-table"}
           ></Table>
         </Panel>
       </Collapse>
-    </>
+    </div>
   );
 };

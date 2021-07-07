@@ -30,7 +30,6 @@ export const BotNameCell: FC<PoolNameData> = ({ name, poolUrl, address }) => {
         style={{
           fontSize: "10px",
           color: "#B2B2B2",
-          display: "inline-block",
         }}
         onClick={() => copyToClipboard(address.toBase58())}
       >

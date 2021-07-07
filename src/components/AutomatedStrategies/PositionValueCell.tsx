@@ -16,30 +16,16 @@ export const PositionValueCell: FC<PositionValueData> = ({
     ));
 
   return (
-    <div
-      className="cell-container"
-      style={{
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "flex-end",
-      }}
-    >
-      <div
-        style={{
-          fontFamily: "Plus Jakarta Sans",
-          fontStyle: "normal",
-          fontWeight: 800,
-          fontSize: "14px",
-          lineHeight: "0px",
-        }}
-      >
+    <div className="cell-container">
+      <div>
         <strong>{formatUSD.format(totalValue)}</strong>
       </div>
-      <div className="assets">
+      <div className="more">
         <Tooltip placement="bottomLeft" title={labels}>
-          <span style={{ fontSize: "10px" }}>
-            Accross {labels.length} Asset{labels.length > 1 ? "s" : ""}
+          <span>
+            Across {labels.length} Asset{labels.length > 1 ? "s" : ""}
           </span>
+          <i className="fas fa-info-circle 2x"></i>
         </Tooltip>
       </div>
     </div>

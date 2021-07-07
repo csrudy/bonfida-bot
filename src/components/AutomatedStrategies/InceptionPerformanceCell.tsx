@@ -8,12 +8,22 @@ interface InceptionPerfomanceProps {
 export const InceptionPerformanceCell: FC<InceptionPerfomanceProps> = ({
   inceptionPerformance,
 }) => {
+  let color;
+  let sign = "";
+  if (inceptionPerformance !== null && inceptionPerformance > 0) {
+    color = "#06D6A0";
+    sign = "+";
+  } else if (inceptionPerformance !== null && inceptionPerformance > 0) {
+    color = "#FF5A00";
+    sign = "-";
+  }
+
   return (
     <>
-      <Tag>
+      <Tag color={color}>
         {inceptionPerformance !== null
-          ? `${inceptionPerformance.toFixed(2)}%`
-          : "Not Available"}
+          ? `${sign}${inceptionPerformance.toFixed(2)}%`
+          : "-"}
       </Tag>
     </>
   );

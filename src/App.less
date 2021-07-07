@@ -3,10 +3,14 @@
 
 body {
   --row-highlight: @background-color-base;
+  font-family: "Plus Jakarta Sans";
+  font-style: normal;
+  font-weight: normal;
+  font-size: 14px;
 }
 
 .app-title {
-  font-family: "FF Oxide Solid";
+  font-family: "Plus Jakarta Sans";
   font-style: normal;
   font-weight: 300;
   letter-spacing: 0px;
@@ -198,4 +202,100 @@ em {
   .exchange-card {
     width: 360px;
   }
+}
+
+.automated-strategies-header {
+  width: inherit;
+}
+.automated-strategies-table table {
+  color: #ffffff;
+  padding: 0px;
+  background: #141414;
+  border-spacing: 0 10px;
+}
+.automated-strategies-table .ant-table-thead > tr > th {
+  background: none;
+  border-bottom: none;
+}
+.automated-strategies-table table > thead > tr:first-child th:last-child {
+  text-align: end;
+  padding-left: 0;
+  padding-right: 0;
+}
+.automated-strategies-table table > thead > tr:first-child th:first-child {
+  text-align: initial;
+  padding-left: 0;
+  padding-right: 0;
+}
+.automated-strategies-table .ant-table-tbody > tr > td {
+  border-bottom: none;
+}
+
+.automated-strategies-table .ant-table-thead .ant-table-cell {
+  color: #b2b2b2;
+  border: none;
+}
+
+.automated-strategies-table .pool-row {
+  border: none;
+  border-radius: 2px;
+  background: #202020;
+}
+.automated-stragtegies-wrapper {
+  padding: 14px;
+}
+.automated-strategies-table .ant-table-cell {
+  border: none;
+  background: #202020;
+  vertical-align: top;
+}
+
+.automated-strategies-header {
+  display: flex;
+  justify-content: space-between;
+  font-weight: bold;
+}
+
+.automated-strategies-header > h2 {
+  display: flex;
+  justify-content: space-between;
+  font-weight: bold;
+}
+
+.automated-strategies-container .ant-collapse-header {
+  padding-left: 0;
+  padding-right: 0;
+}
+
+.automated-strategies-container .ant-collapse > .ant-collapse-item {
+  border: none;
+}
+
+.automated-strategies-container .ant-collapse {
+  border: none;
+  background: #000000;
+}
+.automated-strategies-container
+  .ant-collapse
+  > .ant-collapse-item
+  > .ant-collapse-header {
+  padding-left: 0;
+  padding-right: 0;
+}
+.automated-strategies-container .ant-collapse-content {
+  border: none;
+}
+
+.automated-strategies-table .ant-table-cell:last-child {
+  text-align: end;
+}
+
+.more {
+  font-size: 10px;
+  font-weight: 400;
+  color: #b2b2b2;
+}
+
+i {
+  padding: 3px;
 }
