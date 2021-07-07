@@ -3,10 +3,14 @@
 
 body {
   --row-highlight: @background-color-base;
+  font-family: "Plus Jakarta Sans";
+  font-style: normal;
+  font-weight: normal;
+  font-size: 14px;
 }
 
 .app-title {
-  font-family: "FF Oxide Solid";
+  font-family: "Plus Jakarta Sans";
   font-style: normal;
   font-weight: 300;
   letter-spacing: 0px;
@@ -198,4 +202,42 @@ em {
   .exchange-card {
     width: 360px;
   }
+}
+
+.automated-strategies-table {
+  padding: 0px;
+  background: #141414;
+}
+.ant-table-thead > tr > th {
+  background: none;
+  border-bottom: none;
+}
+.ant-table-tbody > tr > td {
+  border-bottom: none;
+}
+.ant-table table {
+  border-spacing: 0 10px;
+}
+.ant-table-thead .ant-table-cell {
+  color: #b2b2b2;
+  border: none;
+}
+.ant-table-thead:first-child {
+  padding: 0;
+}
+.ant-table-thead:last-child {
+  padding: 0;
+}
+.automated-strategies-table .ant-table-row .pool-row {
+  border: none;
+  border-radius: 2px;
+  background: #202020;
+  margin: 5px;
+}
+.automated-stragtegies-wrapper {
+  padding: 14px;
+}
+.ant-table-cell {
+  border: none;
+  background: #202020;
 }

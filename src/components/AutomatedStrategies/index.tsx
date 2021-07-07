@@ -129,17 +129,24 @@ export const AutomatedStrategies = () => {
   );
 
   return (
-    <>
+    <div className={"automated-stragtegies"}>
       <Collapse defaultActiveKey={1}>
-        <Panel showArrow={false} header={header} key="1">
+        <Panel
+          showArrow={false}
+          header={header}
+          className={"automated-stragtegies-wrapper"}
+          key="1"
+        >
           <Table
             columns={columns}
             dataSource={poolTableData}
+            rowClassName={"pool-row"}
             pagination={false}
             loading={loading}
+            className={"automated-strategies-table"}
           ></Table>
         </Panel>
       </Collapse>
-    </>
+    </div>
   );
 };
