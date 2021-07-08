@@ -20,8 +20,12 @@ export const MarketsCell: FC<PoolMarketData> = ({
       </div>
       {!!otherMarkets.length && (
         <div className="more">
-          <Tooltip placement="bottomLeft" title={otherMarkets.join(", ")}>
-            <span className="more">+{otherMarkets.length} more</span>
+          <span className="more">+{otherMarkets.length} more</span>
+          <Tooltip
+            placement="bottomLeft"
+            title={otherMarkets.join(", ")}
+            arrowPointAtCenter
+          >
             <i className="fas fa-info-circle 2x"></i>
           </Tooltip>
         </div>

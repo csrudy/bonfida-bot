@@ -22,10 +22,10 @@ export const PositionValueCell: FC<PositionValueData> = ({
         <strong>{formatUSD.format(totalValue)}</strong>
       </div>
       <div className="more">
-        <Tooltip placement="bottomLeft" title={labels}>
-          <span>
-            Across {labels.length} Asset{labels.length > 1 ? "s" : ""}
-          </span>
+        <span>
+          Across {labels.length} Asset{labels.length > 1 ? "s" : ""}
+        </span>
+        <Tooltip placement="bottomLeft" title={labels} arrowPointAtCenter>
           <i className="fas fa-info-circle 2x"></i>
         </Tooltip>
       </div>
