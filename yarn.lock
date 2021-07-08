@@ -1278,6 +1278,13 @@
   dependencies:
     "@solana/web3.js" "^0.87.1"
 
+"@dr497/awesome-serum-markets@^1.1.50":
+  version "1.1.50"
+  resolved "https://registry.yarnpkg.com/@dr497/awesome-serum-markets/-/awesome-serum-markets-1.1.50.tgz#e4d0598b443dc425948a4d21beae61f83a10249d"
+  integrity sha512-9HYGqChF2X1eGTcyxZooWs1o+GegD/bgjCufyrN8A+hXon+CUWnBL0o1mxtqrhKOUwKNz/hTa8p+MgT4A441Xw==
+  dependencies:
+    "@solana/web3.js" "^0.87.1"
+
 "@fontsource/plus-jakarta-sans@^4.4.5":
   version "4.4.5"
   resolved "https://registry.yarnpkg.com/@fontsource/plus-jakarta-sans/-/plus-jakarta-sans-4.4.5.tgz#e630f5829a6ed67971ab815605dd53af8e386b9c"

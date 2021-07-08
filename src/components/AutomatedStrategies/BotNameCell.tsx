@@ -15,6 +15,7 @@ export const BotNameCell: FC<PoolNameData> = ({ name, poolUrl, address }) => {
           textOverflow: "ellipsis",
           maxWidth: "150px",
           whiteSpace: "nowrap",
+          color: "#06D6A0",
         }}
       >
         <a

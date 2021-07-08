@@ -2,6 +2,8 @@ import { BONFIDA_OFFICIAL_AND_COMPETITION_POOLS, BONFIDA_OFFICIAL_POOLS_MAP, BOT
 import { fetchPoolBalances, fetchPoolInfo, getPoolsSeedsBySigProvider, getPoolTokenMintFromSeed, PoolAssetBalance, PoolInfo } from "@bonfida/bot";
 import { abbreviateAddress, apiGet, formatAmount, getTokenByName, getTokenName, getTokenPrice, getUserParsedAccounts } from "../utils/utils";
 import { MARKETS } from "@project-serum/serum";
+//@ts-ignore
+import { AWESOME_MARKETS } from '@dr497/awesome-serum-markets';
 import { Connection, ParsedAccountData, PublicKey, RpcResponseAndContext, TokenAmount } from "@solana/web3.js";
 import { TokenInfoMap } from "@solana/spl-token-registry";
 import { PLATFORMS_ENUM, PLATFORM_META } from "../components/AutomatedStrategies";
@@ -175,7 +177,7 @@ export const getBonfidaPoolMarketData = (tokenMap: TokenInfoMap, poolInfo:PoolIn
   const { authorizedMarkets } = poolInfo;
 
   const markets = authorizedMarkets.map<string>((marketAddress) => {
-    const market =  MARKETS.find(m => m.address.toBase58() === marketAddress.toBase58())
+    const market =  MARKETS.concat(AWESOME_MARKETS).find(m => m.address.toBase58() === marketAddress.toBase58())
     const marketName = market ? market.name : abbreviateAddress(marketAddress)
     return marketName
   })
@@ -263,8 +265,16 @@ export const createTokenPriceMap = async (mints: Set<PublicKey>): Promise<TokenP
   }
   return priceMap
 }
-
-export const getBonfidaPoolTokenPrice = (tokenPriceMap: TokenPriceMap, tokenAmount: TokenAmount, poolAssetBalance: PoolAssetBalance[]) => {
+/**
+* The price of a pool token is derived from the
+* total value and current price of assets held by the pool
+* devided by the total supply of the pool token
+*/
+export const getBonfidaPoolTokenPrice = (
+  tokenPriceMap: TokenPriceMap,
+  tokenAmount: TokenAmount,
+  poolAssetBalance: PoolAssetBalance[]
+  ): number => {
   let totalValueOfPool = 0;
   for (const assetBalance of poolAssetBalance) {
     const price = tokenPriceMap[assetBalance.mint]

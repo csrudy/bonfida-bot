@@ -10,8 +10,9 @@ export const PositionValueCell: FC<PositionValueData> = ({
   const labels = Object.entries(assetBalances)
     .sort((a, b) => Number(b[1].value) - Number(a[1].value))
     .map<JSX.Element>(([token, amount]) => (
-      <div>
-        {token}: {amount.value}
+      <div style={{ display: "flex", justifyContent: "space-between" }}>
+        <span style={{ paddingRight: "8px" }}>{token}</span>
+        <span>{amount.value}</span>
       </div>
     ));
 
