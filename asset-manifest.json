@@ -1,21 +1,21 @@
 {
   "files": {
-    "main.css": "./static/css/main.4dee0001.chunk.css",
-    "main.js": "./static/js/main.f3805687.chunk.js",
+    "main.css": "./static/css/main.551e5649.chunk.css",
+    "main.js": "./static/js/main.d21c37be.chunk.js",
     "runtime-main.js": "./static/js/runtime-main.7d63d1b5.js",
     "static/css/2.72b1f475.chunk.css": "./static/css/2.72b1f475.chunk.css",
-    "static/js/2.5daa71fb.chunk.js": "./static/js/2.5daa71fb.chunk.js",
+    "static/js/2.48154bf9.chunk.js": "./static/js/2.48154bf9.chunk.js",
     "index.html": "./index.html",
-    "precache-manifest.d65dbc05ea7d585fa0e638a8cdafe6b4.js": "./precache-manifest.d65dbc05ea7d585fa0e638a8cdafe6b4.js",
+    "precache-manifest.d8fd3907952dcf05e793d7efae3f81e9.js": "./precache-manifest.d8fd3907952dcf05e793d7efae3f81e9.js",
     "service-worker.js": "./service-worker.js",
-    "static/js/2.5daa71fb.chunk.js.LICENSE.txt": "./static/js/2.5daa71fb.chunk.js.LICENSE.txt",
+    "static/js/2.48154bf9.chunk.js.LICENSE.txt": "./static/js/2.48154bf9.chunk.js.LICENSE.txt",
     "static/media/index.css": "./static/media/plus-jakarta-sans-latin-400-normal.805de6e3.woff"
   },
   "entrypoints": [
     "static/js/runtime-main.7d63d1b5.js",
     "static/css/2.72b1f475.chunk.css",
-    "static/js/2.5daa71fb.chunk.js",
-    "static/css/main.4dee0001.chunk.css",
-    "static/js/main.f3805687.chunk.js"
+    "static/js/2.48154bf9.chunk.js",
+    "static/css/main.551e5649.chunk.css",
+    "static/js/main.d21c37be.chunk.js"
   ]
 }
