@@ -1,12 +1,12 @@
 {
   "files": {
-    "main.css": "./static/css/main.551e5649.chunk.css",
-    "main.js": "./static/js/main.eb6afa98.chunk.js",
+    "main.css": "./static/css/main.51599df2.chunk.css",
+    "main.js": "./static/js/main.bb4625da.chunk.js",
     "runtime-main.js": "./static/js/runtime-main.7d63d1b5.js",
     "static/css/2.72b1f475.chunk.css": "./static/css/2.72b1f475.chunk.css",
     "static/js/2.48154bf9.chunk.js": "./static/js/2.48154bf9.chunk.js",
     "index.html": "./index.html",
-    "precache-manifest.3ce346c43daa1e6bd10ea7a22db5a942.js": "./precache-manifest.3ce346c43daa1e6bd10ea7a22db5a942.js",
+    "precache-manifest.04b655b77a1f993cb80038e393c2b887.js": "./precache-manifest.04b655b77a1f993cb80038e393c2b887.js",
     "service-worker.js": "./service-worker.js",
     "static/js/2.48154bf9.chunk.js.LICENSE.txt": "./static/js/2.48154bf9.chunk.js.LICENSE.txt",
     "static/media/index.css": "./static/media/plus-jakarta-sans-latin-400-normal.805de6e3.woff"
@@ -15,7 +15,7 @@
     "static/js/runtime-main.7d63d1b5.js",
     "static/css/2.72b1f475.chunk.css",
     "static/js/2.48154bf9.chunk.js",
-    "static/css/main.551e5649.chunk.css",
-    "static/js/main.eb6afa98.chunk.js"
+    "static/css/main.51599df2.chunk.css",
+    "static/js/main.bb4625da.chunk.js"
   ]
 }
