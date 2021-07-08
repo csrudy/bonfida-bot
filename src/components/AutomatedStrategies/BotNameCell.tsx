@@ -1,7 +1,7 @@
-import { CopyFilled } from "@ant-design/icons";
 import React, { FC } from "react";
 import { PoolNameData } from "../../actions/bonfida";
 import { abbreviateAddress, copyToClipboard } from "../../utils/utils";
+import { ReactComponent as CopyIcon } from "../../assets/copy.svg";
 
 export const BotNameCell: FC<PoolNameData> = ({ name, poolUrl, address }) => {
   const abbreviatedAddress = abbreviateAddress(address);
@@ -28,16 +28,11 @@ export const BotNameCell: FC<PoolNameData> = ({ name, poolUrl, address }) => {
         </a>
       </div>
       <div
-        style={{
-          fontSize: "10px",
-          color: "#B2B2B2",
-        }}
+        className="address-copy"
         onClick={() => copyToClipboard(address.toBase58())}
       >
-        <span style={{ cursor: "pointer" }} id="pool-address">
-          {abbreviatedAddress}
-        </span>
-        <CopyFilled />
+        <span id="pool-address">{abbreviatedAddress}</span>
+        <CopyIcon />
       </div>
     </>
   );

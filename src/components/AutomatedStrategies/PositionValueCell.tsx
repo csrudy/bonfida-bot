@@ -2,6 +2,7 @@ import { Tooltip } from "antd";
 import React, { FC } from "react";
 import { PositionValueData } from "../../actions/bonfida";
 import { formatUSD } from "../../utils/utils";
+import { ReactComponent as InfoIcon } from "../../assets/info.svg";
 
 export const PositionValueCell: FC<PositionValueData> = ({
   totalValue,
@@ -18,15 +19,13 @@ export const PositionValueCell: FC<PositionValueData> = ({
 
   return (
     <div className="cell-container">
-      <div>
-        <strong>{formatUSD.format(totalValue)}</strong>
-      </div>
+      <div className="pool-value">{formatUSD.format(totalValue)}</div>
       <div className="more">
         <span>
           Across {labels.length} Asset{labels.length > 1 ? "s" : ""}
         </span>
         <Tooltip placement="bottomLeft" title={labels} arrowPointAtCenter>
-          <i className="fas fa-info-circle 2x"></i>
+          <InfoIcon className="more-info" />
         </Tooltip>
       </div>
     </div>

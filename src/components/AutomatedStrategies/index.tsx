@@ -10,6 +10,7 @@ import { BotNameCell } from "./BotNameCell";
 import { Collapse, Table } from "antd";
 import { getBonfidaPools, PoolTableRow } from "../../actions/bonfida";
 import { useConnection, useConnectionConfig } from "../../contexts/connection";
+import CalculatorIcon from "../../assets/calculator.svg";
 const { Panel } = Collapse;
 
 export enum PLATFORMS_ENUM {
@@ -114,11 +115,13 @@ export const AutomatedStrategies = () => {
   ];
   const header = (
     <div className="automated-strategies-header">
-      <h2>
-        <strong>Automated Strategies</strong>
-      </h2>
-      <h2>
-        <strong>{formatUSD.format(totalAutomatedStrategyValue)}</strong>
+      <div style={{ display: "flex", alignItems: "center" }}>
+        <img src={CalculatorIcon} alt="Calculator Icon" />
+        <h2>Automated Strategies</h2>
+      </div>
+
+      <h2 className="total-balance" style={{ lineHeight: "unset" }}>
+        {formatUSD.format(totalAutomatedStrategyValue)}
       </h2>
     </div>
   );
@@ -139,7 +142,7 @@ export const AutomatedStrategies = () => {
             pagination={false}
             loading={loading}
             className={"automated-strategies-table"}
-          ></Table>
+          />
         </Panel>
       </Collapse>
     </div>

@@ -1,4 +1,5 @@
 @import "~antd/dist/antd.dark.less";
+@import "~@fontsource/plus-jakarta-sans/latin.css";
 @import "./ant-custom.less";
 
 body {
@@ -215,7 +216,8 @@ em {
 }
 .automated-strategies-table .ant-table-thead > tr > th {
   background: none;
-  border-bottom: none;
+  padding-bottom: 8px;
+  border-bottom: 0;
 }
 .automated-strategies-table table > thead > tr:first-child th:last-child {
   text-align: end;
@@ -230,16 +232,26 @@ em {
 .automated-strategies-table .ant-table-tbody > tr > td {
   border-bottom: none;
 }
-
+.automated-strategies-table > table > tr:last-child {
+  border-spacing: 0;
+}
 .automated-strategies-table .ant-table-thead .ant-table-cell {
   color: #b2b2b2;
   border: none;
+  padding-top: 0;
 }
-
 .automated-strategies-table .pool-row {
   border: none;
-  border-radius: 2px;
   background: #202020;
+}
+.pool-row td:first-child {
+  border-top-left-radius: 2px;
+  border-bottom-left-radius: 2px;
+}
+
+.pool-row td:last-child {
+  border-top-right-radius: 2px;
+  border-bottom-right-radius: 2px;
 }
 .automated-stragtegies-wrapper {
   padding: 14px;
@@ -253,15 +265,26 @@ em {
 .automated-strategies-header {
   display: flex;
   justify-content: space-between;
-  font-weight: bold;
 }
 
-.automated-strategies-header > h2 {
-  display: flex;
-  justify-content: space-between;
-  font-weight: bolder;
+.automated-strategies-header h2 {
+  font-style: normal;
+  font-weight: 800;
+  font-size: 22px;
+  line-height: 0;
+  margin-bottom: 0;
 }
-
+.total-balance {
+  line-height: unset;
+}
+.automated-strategies-header img {
+  margin-right: 12px;
+}
+.automated-strategies-container .ant-collapse-content-box {
+  padding: 30px;
+  padding-top: 20px;
+  padding-bottom: 20px;
+}
 .automated-strategies-container .ant-collapse-header {
   padding-left: 0;
   padding-right: 0;
@@ -291,12 +314,37 @@ em {
 }
 
 .more {
+  display: flex;
+  align-items: center;
   font-size: 10px;
   font-weight: 400;
   color: #b2b2b2;
 }
+.ant-table-cell:last-child .more {
+  justify-content: flex-end;
+}
 
-i {
-  padding: 3px;
-  padding-right: 0px;
+svg.more-info {
+  padding: 5px;
+  margin-right: 0px;
+  box-sizing: content-box;
+  margin-right: -5px;
+}
+
+.pool-value {
+  font-weight: 800;
+  letter-spacing: 0em;
+  text-align: right;
+}
+
+.address-copy {
+  font-size: 10px;
+  color: #b2b2b2;
+  cursor: pointer;
+  width: fit-content;
+  display: flex;
+  align-items: center;
+  svg {
+    margin-left: 3px;
+  }
 }

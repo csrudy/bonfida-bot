@@ -2,6 +2,7 @@ import React, { FC } from "react";
 import { PoolIcon } from "../TokenIcon";
 import { Tooltip } from "antd";
 import { PoolMarketData } from "../../actions/bonfida";
+import { ReactComponent as InfoIcon } from "../../assets/info.svg";
 
 export const MarketsCell: FC<PoolMarketData> = ({
   name,
@@ -24,9 +25,9 @@ export const MarketsCell: FC<PoolMarketData> = ({
           <Tooltip
             placement="bottomLeft"
             title={otherMarkets.join(", ")}
-            arrowPointAtCenter
+            arrowPointAtCenter={true}
           >
-            <i className="fas fa-info-circle 2x"></i>
+            <InfoIcon className="more-info" />
           </Tooltip>
         </div>
       )}
